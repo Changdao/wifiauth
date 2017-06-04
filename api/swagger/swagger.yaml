@@ -1,0 +1,805 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: Nine Coupon Server
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+paths:
+  /ninecoupon/signup:
+    x-swagger-router-controller: account
+    post:
+      description: create an account
+      operationId: createAccount
+      parameters:
+        - name: account
+          in: body
+          description: Which will be created
+          required: true
+          schema:
+            $ref: '#/definitions/newAccount'
+      responses:
+        '200':
+          description: Account create
+          schema:
+            $ref: '#/definitions/SuccessTokenResponse'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /ninecoupon/anonymous:
+    x-swagger-router-controller: account
+    post:
+      description: create an account
+      operationId: anonymousAccount
+      parameters:
+        - name: account
+          in: body
+          description: Which will be created
+          required: true
+          schema:
+            $ref: '#/definitions/newAccount'
+      responses:
+        '200':
+          description: Account create
+          schema:
+            $ref: '#/definitions/SuccessTokenResponse'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          
+  /ninecoupon/account:
+    x-swagger-router-controller: account
+    get:
+      security:
+        - nineauth:
+            - read
+      description: get an account info
+      operationId: getAccount
+      responses:
+        '200':
+          description: Account create
+          schema:
+            $ref: '#/definitions/Account'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  
+  '/account/status/{accountPhone}':
+    x-swagger-router-controller: account
+    get:
+      description: create an account
+      operationId: findTheCountByPhone
+      parameters:
+        - name: accountPhone
+          in: path
+          description: account phone key
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The phone exist
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /coupon/template:
+    x-swagger-router-controller: coupon_template
+    get:
+      security:
+        - nineauth:
+            - read
+      tags:
+        - Coupon template Operations
+      operationId: getAllCouponTemplate
+      parameters:
+        - name: status
+          in: query
+          description: The status to filter by
+          type: string
+        - name: type
+          in: query
+          description: The type to filter by
+          type: string
+        - name: origin
+          in: query
+          description: The origin to filter by
+          type: string
+      summary: Finds all coupon template in the system
+      responses:
+        '200':
+          description: Coupon template response
+          schema:
+            $ref: '#/definitions/CouponTemplateResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+        - nineauth:
+            - write
+      tags:
+        - Coupon template Operations
+      operationId: createCouponTemplate
+      summary: Creates a new coupon template
+      parameters:
+        - name: couponTemplate
+          in: body
+          description: The coupon template to create
+          required: true
+          schema:
+            $ref: '#/definitions/newCouponTemplate'
+      responses:
+        '200':
+          description: Created coupon template response
+          schema:
+            $ref: '#/definitions/CouponTemplate'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/coupon/template/{couponTemplateId}':
+    x-swagger-router-controller: coupon_template
+    delete:
+      security:
+        - nineauth:
+            - write
+      tags:
+        - Coupon template Operations
+      description: Deletes the coupon template by id
+      operationId: deleteCouponTemplateById
+      responses:
+        '200':
+          description: coupon template deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      security:
+        - nineauth:
+            - read
+      tags:
+        - Coupon template Operations
+      operationId: getCouopnTemplateById
+      summary: Finds the coupon template by id
+      responses:
+        '200':
+          description: Coupon template response
+          schema:
+            $ref: '#/definitions/CouponTemplate'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    parameters:
+      - name: couponTemplateId
+        in: path
+        description: The coupon template will be deleted
+        required: true
+        type: integer
+        format: int64
+  /coupon/template/instance:
+    x-swagger-router-controller: coupon_template_instance
+    get:
+      security:
+        - nineauth:
+            - read
+      tags:
+        - Coupon Template Instance Operations
+      operationId: getCouponTemplateInstance
+      description: Query the coupon template instance
+      responses:
+        '200':
+          description: Coupon template instance response
+          schema:
+            $ref: '#/definitions/CouponTemplateInstance'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+        - nineauth:
+            - write
+      tags:
+        - Coupon Template Instance Operations
+      operationId: createCouponTemplateInstance
+      summary: Creates a new coupon template instance
+      parameters:
+        - name: couponTemplateInstance
+          in: body
+          description: The coupon template instance to create
+          required: true
+          schema:
+            $ref: '#/definitions/newCouponTemplateInstance'
+      responses:
+        '200':
+          description: Created coupon template instance response
+          schema:
+            $ref: '#/definitions/CouponTemplateInstance'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/coupon/template/instance/{couponTemplateInstanceId}':
+    x-swagger-router-controller: coupon_template_instance
+    delete:
+      security:
+        - nineauth:
+            - write
+      description: Deletes the coupon template instance by id
+      operationId: deleteCouponTemplateInstanceById
+      responses:
+        '200':
+          description: coupon template instance deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      security:
+        - nineauth:
+            - read
+      tags:
+        - Coupon template Operations
+      operationId: getCouopnTemplateInstanceById
+      summary: Finds the coupon template by id
+      responses:
+        '200':
+          description: Coupon template response
+          schema:
+            $ref: '#/definitions/CouponTemplateInstance'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    parameters:
+      - name: couponTemplateInstanceId
+        in: path
+        description: Id of coupon template
+        required: true
+        type: integer
+        format: int64
+  /coupon/instance:
+    x-swagger-router-controller: coupon_instance
+    post:
+      security:
+        - nineauth:
+            - write
+      description: create coupon instance
+      operationId: createCouponInstance
+      parameters:
+        - name: couponTemplateInstance
+          in: body
+          description: The coupon template instance
+          required: true
+          schema:
+            $ref: '#/definitions/CouponTemplateInstance'
+      responses:
+        '200':
+          description: create coupon instance
+          schema:
+            $ref: "#/definitions/SuccessJsonResponse"
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/coupon/instance/{appUserId}':
+    x-swagger-router-controller: coupon_instance
+    get:
+      security:
+        - nineauth:
+            - read
+      description: get the nine coupons for the user
+      operationId: getCouponOfUser
+      parameters:
+        - name: appUserId
+          in: path
+          description: The user id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Coupon template response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CouponInstance'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+        - nineauth:
+            - write
+      description: get the coupon of lottery
+      operationId: receiveTheCoupon
+      parameters:
+        - name: appUserId
+          in: path
+          description: The user who receive the coupon
+          required: true
+          type: string
+        - name: couponInstance
+          in: body
+          description: Which is received
+          required: true
+          schema:
+            $ref: '#/definitions/CouponInstance'
+      responses:
+        '200':
+          description: Coupon is received
+          schema:
+            $ref: "#/definitions/SuccessJsonResponse"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/coupon/instance/{appUserId}/lottery':
+    x-swagger-router-controller: coupon_instance
+    get:
+      security:
+        - nineauth:
+            - write
+      description: get the coupon of lottery
+      operationId: getCouponLotteryOfUser
+      parameters:
+        - name: appUserId
+          in: path
+          description: The user who get the coupon of lottery
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Coupon template response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CouponConsumption'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/coupon/instance/writeoff/{couponInstanceId}':
+    x-swagger-router-controller: coupon_instance
+    put:
+      security:
+        - nineauth:
+            - write
+      description: write off the coupon instance
+      operationId: writeOffTheCouponInstance
+      parameters:
+        - name: couponInstanceId
+          in: path
+          description: The coupon which will be written off
+          required: true
+          type: string
+        - name: couponDetail
+          in: body
+          schema:
+            $ref: '#/definitions/newCouponConsumption'
+      responses:
+        '200':
+          description: Coupon template response
+          schema:
+            $ref: '#/definitions/CouponConsumption'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/coupon/instance/{clerkUserId}/writeoff':
+    x-swagger-router-controller: coupon_instance
+    get:
+      description: the list of the copon which the user write off 
+      operationId: getTheCouponListOfTheClerk
+      parameters:
+        - name: clerkUserId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200" :
+          description: Coupon template response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CouponConsumption'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'          
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  Login:
+    properties:
+      account:
+        type: string
+      password:
+        type: string
+  Account:
+    properties:
+      id:
+        description: unique identifier for brand
+        format: int64
+        type: integer
+      account:
+        type: string
+      accountName:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      gender:
+        type: integer
+      avatar:
+        type: string
+      status:
+        description: Account status in the app
+        enum:
+          - enabled
+          - disabled
+          - arrears
+        type: string
+      promoter:
+        type: integer
+        description: business promoter
+      accountType:
+        description: Account type in the app
+        enum:
+          - customer
+          - clerk
+          - merchant
+          - brand
+          - market
+          - admin
+        type: string
+      created_at: 
+        type: string
+        format: date-time
+      updated_at: 
+        type: string
+        format: date-time
+    required:
+      - account
+  newAccount:
+    allOf:
+      - $ref: '#/definitions/Account'
+    required:
+      - account
+  SuccessAccountResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessJsonResponse'
+    properties:
+      account:
+        $ref: "#/definitions/Account"
+  Brand:
+    properties:
+      id:
+        description: unique identifier for brand
+        type: integer
+        format: int64
+      name:
+        type: string
+      status:
+        type: string
+        description: Brand status in the app
+        enum:
+          - enabled
+          - disabled
+          - arrears
+      owner: 
+        $ref: "#/definitions/Account"
+      createAt:
+        type: integer
+        format: int64
+    required:
+      - id
+      - name
+  newBrand:
+    allOf:
+      - $ref: '#/definitions/Brand'
+    required:
+      - name
+  Organization:
+    properties:
+      id:
+        description: unique identifier for brand
+        format: int64
+        type: integer
+      name:
+        type: string
+    required:
+      - id
+      - name
+  Tag:
+    properties:
+      id:
+        format: int64
+        type: integer
+      name:
+        type: string
+  Location:
+    properties:
+      latitued:
+        type: number
+        format: double
+      longitued:
+        type: number
+        format: double
+  Shop:
+    properties:
+      id:
+        description: unique identifier for Shop
+        format: int64
+        type: integer
+      name:
+        type: string
+      owner:
+        $ref: '#/definitions/Account'
+      brand:
+        $ref: '#/definitions/Brand'
+      createAt:
+        type: integer
+        format: int64
+    required:
+      - id
+      - name
+      - brand
+  newShop:
+    allOf:
+      - $ref: '#/definitions/Shop'
+    required:
+      - name
+      - brand
+  Mechanism:
+    properties:
+      id:
+        description: unique identifier for brand
+        format: int64
+        type: integer
+      name:
+        type: string
+      organization:
+        $ref: '#/definitions/Organization'
+      shop:
+        $ref: '#/definitions/Shop'
+    required:
+      - name
+      - organization
+  Category:
+    properties:
+      id:
+        format: int64
+        type: integer
+      name:
+        type: string
+  CouponData:
+    properties:
+      name:
+        type: string
+      count:
+        type: integer
+      brandName:
+        type: string
+      discount:
+        type: number
+        format: double
+  CouponTemplate:
+    properties:
+      category:
+        $ref: '#/definitions/Category'
+      id:
+        format: int64
+        type: integer
+      name:
+        type: string
+      data:
+        $ref: '#/definitions/CouponData'
+      status:
+        type: string
+        enum:
+          - enabled
+          - disabled
+          - auditting
+        description: coupon template active status
+      origin:
+        type: string
+      createAt:
+        format: int64
+        type: integer
+    required:
+      - id
+      - name
+      - data
+  CouponTemplateResponse:
+    allOf:
+      - $ref: "#/definitions/SuccessJsonResponse"
+    properties:
+      templateList:
+        type: array
+        items:
+          $ref: '#/definitions/CouponTemplate'
+    required:
+      - templateList
+  newCouponTemplate:
+    allOf:
+      - $ref: '#/definitions/CouponTemplate'
+    required:
+      - name
+      - data
+  CouponTemplateInstance:
+    properties:
+      id:
+        format: int64
+        type: integer
+      name:
+        type: string
+      data:
+        $ref: '#/definitions/CouponData'
+      status:
+        type: string
+        enum:
+          - enabled
+          - disabled
+          - auditting
+        description: coupon template active status
+      publishType:
+        type: string
+      createAt:
+        format: int64
+        type: integer
+      templateInfo:
+        $ref: '#/definitions/CouponTemplate'
+      brand:
+        $ref: '#/definitions/Brand'
+    required:
+      - id
+      - name
+      - data
+      - templateInfo
+      - publishType
+      - brand
+  newCouponTemplateInstance:
+    allOf:
+      - $ref: '#/definitions/CouponTemplateInstance'
+    required:
+      - name
+      - data
+      - templateInfo
+      - publishType
+      - brand
+  CouponInstance:
+    properties:
+      id:
+        format: int64
+        type: integer
+      name:
+        type: string
+      data:
+        $ref: '#/definitions/CouponData'
+      status:
+        type: string
+        enum:
+          - enabled
+          - disabled
+          - auditting
+        description: coupon template active status
+      templateInstance:
+        $ref: '#/definitions/CouponTemplateInstance'
+    required:
+      - id
+      - name
+      - data
+  newCouponInstance:
+    allOf:
+      - $ref: '#/definitions/CouponInstance'
+    required:
+      - name
+      - data
+      - templateInstance
+  CouponConsumption:
+    properties:
+      id:
+        description: unique identifier for consumption
+        format: int64
+        type: integer
+      couponInstance:
+        $ref: '#/definitions/CouponInstance'
+      consumer:
+        $ref: '#/definitions/Account'
+      clerk:
+        $ref: '#/definitions/Account'
+      createAt:
+        type: integer
+        format: int64
+      location:
+        $ref: '#/definitions/Location'
+    required:
+      - couponInstance
+  newCouponConsumption:
+    allOf:
+      - $ref: '#/definitions/CouponConsumption'
+    required:
+      - couponInstance
+  Error:
+    required:
+      - message
+      - code
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+  SuccessJsonResponse:
+    properties:
+      message:
+        type: string
+      code:
+        type: integer
+        format: int32
+    required:
+      - message
+  SuccessTokenResponse:
+    properties:
+      message:
+        type: string
+      code:
+        type: integer
+        format: int32
+      token: 
+        type: string
+      refresh:
+        type: string
+      effective:
+        type: integer
+        format: int32
+      account:
+        $ref: '#/definitions/Account'
+    required:
+      - code
+  ErrorResponse:
+    required:
+      - message
+      - code
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+  - application/xml
+  - text/plain
+  - text/html
+securityDefinitions:
+  nineauth:
+    type: oauth2
+    description: nine coupon oauth2 summary
+    scopes:
+      read: Read access
+      write: Write access
+    flow: accessCode
+    authorizationUrl: 'http://localhost:3001/oauth/authorize'
+    tokenUrl: 'http://localhost:3001/oauth/token'
+    
+    

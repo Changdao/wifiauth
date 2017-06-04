@@ -1,0 +1,26 @@
+
+
+
+hmset "clients:ninecouponAdmin" clientId ninecouponAdmin clientSecret c9654199366985
+SADD "clients:ninecouponAdmin:grant_types" "password" "refresh_token"
+
+hmset "clients:ninecouponWifi" clientId ninecouponWifi clientSecret 9a013827bb66
+SADD "clients:ninecouponWifi:grant_types" "password" "refresh_token"
+
+hmset "clients:ninecouponConsumption" clientId ninecouponConsumption clientSecret 13827bb66cf4ba
+SADD "clients:ninecouponConsumption:grant_types" "password" "refresh_token"
+
+
+
+HMSET "users:admin" id admin username administrator password 123456
+HMSET "users:liuhanru" id liuhanru username liuhanru password 123456
+
+
+ninecouponAdmin:c9654199366985
+bmluZWNvdXBvbkFkbWluOmM5NjU0MTk5MzY2OTg1
+
+ninecouponWifi:9a013827bb66
+bmluZWNvdXBvbldpZmk6OWEwMTM4MjdiYjY2
+
+ninecouponConsumption:13827bb66cf4ba
+bmluZWNvdXBvbkNvbnN1bXB0aW9uOjEzODI3YmI2NmNmNGJh

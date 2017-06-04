@@ -2,7 +2,7 @@
     "name": "wifiauth",
     "version": "1.0.0",
     "description": "wifi 5u auth",
-    "main": "index.js",
+    "main": "app.js",
     "dependencies": {
         "oauth2-server": "^2.4.1",
         "bluebird": "^3.5.0",
