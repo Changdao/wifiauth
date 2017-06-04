@@ -1,0 +1,5 @@
+database:
+create
+user: wifiauth
+password: wifiauth
+database: wifiauth

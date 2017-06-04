@@ -1,9 +1,10 @@
 
-hmset "clients:wificurrency" clientId wificurrency clientSecret 2b32d879c6a1c5f0
+hmset "clients:wificurrency" clientId wificurrency clientSecret d2lmaWN1cnJlb
 SADD "clients:wificurrency:grant_types" "password" "refresh_token"
 
 HMSET "users:admin" id admin username administrator password 123456
 
-wificurrency:2b32d879c6a1c5f0
-d2lmaWN1cnJlbmN5OjJiMzJkODc5YzZhMWM1ZjAK
+wificurrency:d2lmaWN1cnJlb
+d2lmaWN1cnJlbmN5OmQybG1hV04xY25KbGI=
+
 

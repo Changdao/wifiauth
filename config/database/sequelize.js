@@ -1,6 +1,6 @@
 var Sequelize = require('sequelize');
 
-var sequelize = new Sequelize('ninecoupon', 'ninecoupon', 'ninecoupon', {
+var sequelize = new Sequelize('wifiauth', 'wifiauth', 'wifiauth', {
     host:"localhost",
     logging: true,
     define: {

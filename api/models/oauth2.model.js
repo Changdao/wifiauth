@@ -28,7 +28,8 @@ model.getAccessToken = function (bearerToken, callback) {
 };
 
 model.getClient = function (clientId, clientSecret, callback) {
-    db.hgetall(util.format(keys.client, clientId), function (err, client) {
+    let key = util.format(keys.client, clientId);
+    db.hgetall(key, function (err, client) {
         if (err) return callback(err);
 
         if (!client || client.clientSecret !== clientSecret) return callback();
@@ -56,6 +57,7 @@ model.getRefreshToken = function (bearerToken, callback) {
 };
 
 model.grantTypeAllowed = function (clientId, grantType, callback) {
+    let key = util.format(keys.client, clientId);
     db.sismember(util.format(keys.grantTypes, clientId), grantType, callback);
 };
 

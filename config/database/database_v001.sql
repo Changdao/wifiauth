@@ -16,7 +16,7 @@ create table if not exists t_account (
 create table if not exists t_identify (
    id bigserial primary key,
    account varchar(400),
-   phone varchar(40),
+   identifier_type varchar(40),
    identifier_code varchar(40),
    front_img_file varchar(1000),
    front_img_file_code varchar(100),
@@ -29,7 +29,7 @@ create table if not exists t_identify (
    updated_at timestamp
 );
 
-create table if not exists t_bank {
+create table if not exists t_bank (
    id bigserial primary key,
    account varchar(400),
    bank_type varchar(400),
@@ -38,9 +38,9 @@ create table if not exists t_bank {
    status varchar(40),
    created_at timestamp default current_timestamp,
    updated_at timestamp
-};
+);
 
-create table if not exists t_subscribe {
+create table if not exists t_subscribe (
    id bigserial primary key,
    account varchar(400),
    subscribe_amount double precision,
@@ -50,4 +50,16 @@ create table if not exists t_subscribe {
    status varchar(40),
    created_at timestamp default current_timestamp,
    updated_at timestamp
-}
+);
+
+create table if not exists t_dictionary (
+   id bigserial primary key,
+   dict_name varchar(400),
+   dict_value varchar(40),
+   dict_unit varchar(40),
+   dict_type varchar(40),
+   dict_sort integer,
+   status varchar(40),
+   created_at timestamp default current_timestamp,
+   updated_at timestamp
+);
