@@ -21,7 +21,7 @@ exports.send=function(phone,msg){
     var url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid=';
 
     request.get(url).on('data',function(data){
-	    console.log(data);
+	    console.log(data.toString());
     })
 
 };
