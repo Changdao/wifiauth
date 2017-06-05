@@ -30,7 +30,7 @@ exports.send=function(phone,msg){
 
     var url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid='+Math.trunc(Math.random()*1000);
     console.log('==>sms url:',url);
-    request.get(url).on('data',function(data){
+    request.get(encodeURI(url)).on('data',function(data){
 	    console.log(data.toString());
     })
 
