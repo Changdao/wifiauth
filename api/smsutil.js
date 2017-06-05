@@ -19,7 +19,7 @@ exports.send=function(phone,msg){
     var key = md5sum.digest( "hex" );
 
     var url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid=';
-
+    console.log('==>sms url:',url);
     request.get(url).on('data',function(data){
 	    console.log(data.toString());
     })
