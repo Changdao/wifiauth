@@ -22,50 +22,23 @@ function createAccount(req, res){
         code: 1100,
         message: "没有提供有效参数"
     };
-    console.log(account);
     let available = account && account.account && account.password;
     if(!available) {
         res.json(result);
         return;
     };
     delete(account.id);
-    DomainAccount.findRedisAccount(account)
-        .then((couldcreateUser)=>{
-        })
-        .catch((error)=>{
-            res.json(error);
-        });
-    DomainAccount.createAccount(account)
+    account.identifierType = account.identifierType || 'identifier';
+    DomainAccount.signUpAccount(account)
         .then((result)=>{
-            res.josn(result);
+            res.status(200);
+            res.json(result);
         })
-        .catch((error)=>{
-            res.json(error);
-        });
-    DomainAccount.findReidsAccount(account)
-        .then((user)=>{
-            //检查用户是否存在
-            if(user){
-                result = {
-                    code: 1101,
-                    message: "已经存在此用户"
-                };
-                res.json(result);
-            }else{
-                //检查短信验证吗
-                
-                DomainAccount.signUpAccount(account)
-                    .then((xxx)=>{
-                        result = {
-                            code: 0,
-                            message: "成功注册"
-                        };
-                        res.json(result);
-                    },(err)=>{
-                        res.json(err);
-                    });
-            }
-        });
+        .catch((errorResult)=>{
+            res.status(500);
+            res.json(errorResult);
+        })
+    ;
 }
 /**
  * get account info by token

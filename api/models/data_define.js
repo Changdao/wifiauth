@@ -49,7 +49,25 @@ var DomainAccount = sequelize.define('t_account', {
         field:"account_type"
     }
 });
-DomainAccount.findReidsAccount = function findReidsAccount(newAccount){
+DomainAccount.signUpAccount = function signUpAccount(newAccount){
+    return DomainAccount.findRedisAccount(newAccount)
+        .then((user)=>{
+            return DomainPhoneCode.checkAccountCode(newAccount);
+        })
+        .then((phoneCodeInstance)=>{
+            return DomainAccount.createAccount(newAccount);
+        })
+        .then((accountInstance)=>{
+            return DomainIdentify.addAccountIdentify(newAccount);
+        })
+        .then((indentifierInstance)=>{
+            return {
+                code: 0,
+                message: "ok"
+            };
+        });
+};
+DomainAccount.findRedisAccount = function findReidsAccount(newAccount){
     let userKey = redisKey(formats.user, newAccount.account);
     let hasTheUser = redis.hgetallAsync(userKey);
     return hasTheUser.then((user)=>{
@@ -59,28 +77,18 @@ DomainAccount.findReidsAccount = function findReidsAccount(newAccount){
                 message: "已经存在此用户"
             };
         }else{
-            return DomainPhoneCode.findOne({
-                where:{
-                    phone: newAccount.phone,
-                    phoneCode: newAccount.phoneCode
-                }
-            });
-        }
-    }).then((instance)=>{
-        if(instance){
-            return DomainAccount.signUpAccount(newAccount);
-        }else{
-            throw {
-                code: 1102,
-                message: "用户验证码不正确，或者验证码已经过期"
-            };
+            return user;
         }
     });
 };
-DomainAccount.signUpAccount = function signUpAccount(newAccount){
+DomainAccount.createAccount = function signUpAccount(newAccount){
     let userKey = redisKey(formats.user, newAccount.account);
     let getUser = redis.hgetallAsync(userKey);
-    return redis.hmsetAsync(userKey, newAccount)
+    let accountInfo = {
+        username: newAccount.account,
+        password: newAccount.password
+    };
+    return redis.hmsetAsync(userKey, accountInfo)
         .then(()=>{
             return this.findOrCreate({
                 where:{
@@ -170,6 +178,37 @@ var DomainIdentify = sequelize.define("t_identify", {
         type: Sequelize.STRING
     }
 });
+DomainIdentify.addAccountIdentify = function addAccountIdentify(newAccount){
+    return this.findOrCreate({
+        where:{
+            account: newAccount.account,
+            identifierType: newAccount.identifierType
+        },
+        defaults:{
+            account: newAccount.account,
+            identifierType: newAccount.identifierType,
+            identifierCode: newAccount.identifier,
+            frontImgFile:newAccount.front.path,
+            frontImgFileCode: newAccount.front.filename,
+            backImgFile: newAccount.back.path,
+            backImgFileCode: newAccount.back.filename,
+            handImgFile: newAccount.hand.path,
+            handImgFileCode: newAccount.hand.filename,
+            status: "enabled"
+        }
+    }).then((instanceArrays)=>{
+        if(instanceArrays[1]){
+            console.log(instanceArrays[0]);
+        }else{
+            console.log("has the identifier");
+            let result = {
+                code: 1103,
+                message: "认证信息已经使用"
+            };
+        }
+        return instanceArrays;
+    });
+};
 
 var DomainBank = sequelize.define("t_bank", {
     account: {
@@ -256,6 +295,26 @@ var DomainPhoneCode = sequelize.define("t_phone_code", {
         type: Sequelize.STRING
     }
 });
+DomainPhoneCode.checkAccountCode = function checkAccountCode(newAccount){
+    let validDate = new Date();
+    return this.findOne({
+        where:{
+            phone: newAccount.phone,
+            phoneCode : newAccount.phoneCode
+        }
+    }).then((instance)=>{
+        return instance;
+        /**
+        if(instance){
+        }else{
+            throw {
+                code: 1102,
+                message: "无效的短信验证码"
+            };
+        }
+         **/
+    });
+};
 
 //exports.Visitor = Visitor;
 exports.DomainAccount = DomainAccount;

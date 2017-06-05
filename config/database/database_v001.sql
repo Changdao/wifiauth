@@ -63,3 +63,13 @@ create table if not exists t_dictionary (
    created_at timestamp default current_timestamp,
    updated_at timestamp
 );
+
+create table if not exists t_phone_code (
+   id bigserial primary key,
+   phone varchar(40),
+   phone_code varchar(40),
+   status varchar(40),
+   created_at timestamp default current_timestamp,
+   updated_at timestamp
+);
+
