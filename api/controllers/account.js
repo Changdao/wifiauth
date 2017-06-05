@@ -7,9 +7,9 @@ var DomainAccount = require("../models/data_define").DomainAccount;
 
 module.exports = {
     createAccount: createAccount,
-    anonymousAccount: anonymousAccount,
     getAccount,
-    deleteAccount
+    phoneCode
+
 };
 
 /**
@@ -22,22 +22,38 @@ function createAccount(req, res){
         code: 1100,
         message: "没有提供有效参数"
     };
+    console.log(account);
     let available = account && account.account && account.password;
     if(!available) {
         res.json(result);
         return;
     };
     delete(account.id);
+    DomainAccount.findRedisAccount(account)
+        .then((couldcreateUser)=>{
+        })
+        .catch((error)=>{
+            res.json(error);
+        });
+    DomainAccount.createAccount(account)
+        .then((result)=>{
+            res.josn(result);
+        })
+        .catch((error)=>{
+            res.json(error);
+        });
     DomainAccount.findReidsAccount(account)
         .then((user)=>{
+            //检查用户是否存在
             if(user){
                 result = {
                     code: 1101,
                     message: "已经存在此用户"
                 };
-                
                 res.json(result);
             }else{
+                //检查短信验证吗
+                
                 DomainAccount.signUpAccount(account)
                     .then((xxx)=>{
                         result = {
@@ -50,41 +66,6 @@ function createAccount(req, res){
                     });
             }
         });
-}
-function deleteAccount(req, res){
-    let authUser = req.user;
-    let account = req.params.account;
-    DomainAccount.getAccountInfo(authUser)
-        .then((accountInfo)=>{
-            if(accountInfo && accountInfo.accountType && accountInfo.accountType >= 1000){
-                DomainAccount.deleteAccountFromRedis(account)
-                    .then((deled)=>{
-                        res.status(200);
-                        res.json({
-                            code: 0,
-                            message: "删除用户",
-                            account,
-                            deleted: deled[0]
-                        });
-                    });
-            }else{
-                res.status(200);
-                res.json({
-                    code: 1102,
-                    message: "用户授权权限不足",
-                    account
-                });
-            }
-        });
-    
-};
-/**
- * anonymous account sign up
- * req body { account:string, password:string}
- * res 
- */
-function anonymousAccount(req, res){
-    createAccount(req, res);
 }
 /**
  * get account info by token
@@ -110,4 +91,14 @@ function getAccount(req, res){
         res.status(500);
         res.json(result);
     }
+}
+/**
+ * 短信验证码
+ */
+function phoneCode(req, res){
+    console.log(req.body.phone);
+    //这里调用短信网关发送短信
+    res.status(200);
+    res.json("ok");
+    //res.json({code:"633778", phone:req.body.phone});
 }

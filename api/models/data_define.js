@@ -51,11 +51,35 @@ var DomainAccount = sequelize.define('t_account', {
 });
 DomainAccount.findReidsAccount = function findReidsAccount(newAccount){
     let userKey = redisKey(formats.user, newAccount.account);
-    let getUser = redis.hgetallAsync(userKey);
-    return getUser;
+    let hasTheUser = redis.hgetallAsync(userKey);
+    return hasTheUser.then((user)=>{
+        if(user){
+            throw {
+                code: 1101,
+                message: "已经存在此用户"
+            };
+        }else{
+            return DomainPhoneCode.findOne({
+                where:{
+                    phone: newAccount.phone,
+                    phoneCode: newAccount.phoneCode
+                }
+            });
+        }
+    }).then((instance)=>{
+        if(instance){
+            return DomainAccount.signUpAccount(newAccount);
+        }else{
+            throw {
+                code: 1102,
+                message: "用户验证码不正确，或者验证码已经过期"
+            };
+        }
+    });
 };
 DomainAccount.signUpAccount = function signUpAccount(newAccount){
     let userKey = redisKey(formats.user, newAccount.account);
+    let getUser = redis.hgetallAsync(userKey);
     return redis.hmsetAsync(userKey, newAccount)
         .then(()=>{
             return this.findOrCreate({
@@ -219,6 +243,19 @@ var DomainDictionary = sequelize.define("t_dictionary", {
         field: "status"
     }
 });
+var DomainPhoneCode = sequelize.define("t_phone_code", {
+    phone:{
+        type: Sequelize.STRING,
+        field: "phone"
+    },
+    phoneCode:{
+        type: Sequelize.STRING,
+        field: "phone_code"
+    },
+    status:{
+        type: Sequelize.STRING
+    }
+});
 
 //exports.Visitor = Visitor;
 exports.DomainAccount = DomainAccount;
@@ -226,4 +263,6 @@ exports.DomainIdentify = DomainIdentify;
 exports.DomainBank = DomainBank;
 exports.DomainSubscribe = DomainSubscribe;
 exports.DomainDictionary = DomainDictionary;
+exports.DomainPhoneCode = DomainPhoneCode;
+
 
