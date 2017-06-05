@@ -3,12 +3,17 @@
  用于处理优惠券模版
 **/
 var util = require("util");
+var SMSUtil = require('../smsutil');
 var DomainAccount = require("../models/data_define").DomainAccount;
 
 module.exports = {
     createAccount: createAccount,
     getAccount,
-    phoneCode
+    phoneCode,
+    testSMS:function(req,res){
+        SMSUtil.send('13718961866',req.query.msg);
+        res.send('sent');
+    }
 
 };
 
@@ -69,7 +74,9 @@ function getAccount(req, res){
  * 短信验证码
  */
 function phoneCode(req, res){
-    console.log(req.body.phone);
+    //console.log(req.body.phone);
+    var phone = req.query.phone;
+    SMSUtil.send(phone,'您的验证码是9527');
     //这里调用短信网关发送短信
     res.status(200);
     res.json("ok");

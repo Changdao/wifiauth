@@ -36,6 +36,8 @@ app.post('/wifiauth/signup', controllerAccount.createAccount);
 app.post('/wifiauth/subscribe', controllerAccount.createAccount);
 app.get('/wifiauth/account', app.oauth.authorise(), controllerAccount.getAccount);
 
+app.get('/wifiauth/testsms',controllerAccount.testSMS);
+
 app.get('/oauth/authorise', app.oauth.authorise(), function (req, res) {
     // Will require a valid access_token
     res.send('Secret area');
