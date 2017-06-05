@@ -48,6 +48,7 @@ create table if not exists t_subscribe (
    bank_account varchar(400),
    bank_unit varchar(40),
    status varchar(40),
+   item_index varchar(100),
    created_at timestamp default current_timestamp,
    updated_at timestamp
 );

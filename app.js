@@ -33,7 +33,8 @@ app.post('/wifiauth/phone/code', controllerAccount.phoneCode);
 
 app.post('/wifiauth/signup', controllerAccount.createAccount);
 
-app.post('/wifiauth/subscribe', controllerAccount.createAccount);
+app.post('/wifiauth/subscribe', app.oauth.authorise(), controllerAccount.createSubscribe);
+app.get('/wifiauth/subscribe', app.oauth.authorise(), controllerAccount.getSubscribeInfo);
 app.get('/wifiauth/account', app.oauth.authorise(), controllerAccount.getAccount);
 
 app.get('/wifiauth/testsms',controllerAccount.testSMS);
@@ -56,14 +57,3 @@ app.listen(port);
 // for test
 module.exports = app;
 
-/**
-*** TODO ninecoupon/strategy/list
-*** TODO ninecoupon/template/create
-*** TODO ninecoupon/template/list
-*** TODO ninecoupon/template/publish
-*** TODO ninecoupon/coupon/list
-*** TODO ninecoupon/coupon/wifi
-*** TODO ninecoupon/coupon
-*** TODO consumption/list
-*** TODO consumption/coupon
-*/

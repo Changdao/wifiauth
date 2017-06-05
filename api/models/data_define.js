@@ -230,7 +230,35 @@ var DomainBank = sequelize.define("t_bank", {
         type: Sequelize.STRING
     }
 });
-
+DomainBank.createBanck = function createBank(account, info){
+    //TODO 这里要带事务
+    return this.findOrCreate({
+        where:{
+            bankAccount:info.banckAccount
+        },
+        defaults:{
+            account: account,
+            bankType: info.bankType,
+            bankAccount: info.bankAccount,
+            bankUnit: info.bankUnit,
+            status:"using"
+        }
+    }).then((arrayInstance)=>{
+        if(arrayInstance[1]){
+            return arrayInstance[0].toJSON();
+        }else{
+            let alreadyInfo = arrayInstance[0].toJSON();
+            if( alreadyInfo.account == account ){
+                return alreadyInfo;
+            }else{
+                throw {
+                    code: 1303,
+                    message: "账号已经被使用"
+                };
+            }
+        }
+    });
+};
 var DomainSubscribe = sequelize.define("t_subscribe", {
     account: {
         type: Sequelize.STRING
@@ -251,10 +279,52 @@ var DomainSubscribe = sequelize.define("t_subscribe", {
         type: Sequelize.STRING,
         field: "bank_unit"
     },
+    itemIndex:{
+        type:Sequelize.STRING,
+        field: "item_index"
+    },
     status:{
         type: Sequelize.STRING
     }
 });
+DomainSubscribe.getSubscribeInfo = function getSubscribeInfo(account){
+    return this.findAll({
+        where:{
+            account: account
+        }
+    }).then((arrayInstance)=>{
+        return arrayInstance.map(ele => ele.toJSON());
+    });
+};
+
+DomainSubscribe.createSubscribe = function createSubscribe(account, info){
+    //TODO 这里有问题
+    return this.findOrCreate({
+        where:{
+            account: account,
+            subscribeAmount: info.subscribeAmount,
+            bankType: info.bankType,
+            bankAccount: info.bankAccount
+        },
+        defaults:{
+            account: account,
+            subscribeAmount: info.subscribeAmount,
+            bankType: info.bankType,
+            bankAccount: info.bankAccount,
+            bankUnit: info.bankUnit,
+            itemIndex: info
+        }
+    }).then((arrayInstance)=>{
+        if(arrayInstance[1]){
+            return arrayInstance[0].toJSON();
+        }else{
+            throw {
+                code: 1301,
+                message: "已经申购过了"
+            };
+        }
+    });
+};
 
 var DomainDictionary = sequelize.define("t_dictionary", {
     dictName:{
@@ -295,6 +365,30 @@ var DomainPhoneCode = sequelize.define("t_phone_code", {
         type: Sequelize.STRING
     }
 });
+DomainPhoneCode.prepareAccountCode = function preppareAccountCode(phone, code){
+    return this.findOrCreate({
+        where:{
+            phone:phone,
+            created_at : {
+                $gt: new Date(new Date() - 2 * 60 * 1000)
+            }
+        },
+        defaults:{
+            phone: phone,
+            phoneCode:code,
+            status:'sending'
+        }
+    }).then((arrayInstance)=>{
+        if(arrayInstance[1]){//created
+            return arrayInstance[0];
+        }else{
+            throw {
+                code: 1201,
+                message: "已经发送验证码了，请耐心等待"
+            };
+        }
+    });
+};
 DomainPhoneCode.checkAccountCode = function checkAccountCode(newAccount){
     let validDate = new Date();
     return this.findOne({
