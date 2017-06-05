@@ -12,11 +12,11 @@ exports.send=function(phone,msg){
 
     var md5pwd = crypto.createHash("md5");
     md5pwd.update(pwd);
-    var pwdstr = md5pwd.digest('hex');
+    var pwdstr = md5pwd.digest('hex').substring(8,24);
     console.log('==>pwdstr',pwdstr);
     var md5msg = crypto.createHash('md5');
     md5msg.update(msg);
-    var msgmd5 = md5msg.digest('hex');
+    var msgmd5 = md5msg.digest('hex').substring(8,24);
 
     console.log('===msgmd5:',msgmd5);
 
@@ -25,7 +25,7 @@ exports.send=function(phone,msg){
 
     var md5sum=crypto.createHash( "md5" );
     md5sum.update(d);
-    var key = md5sum.digest( "hex" );
+    var key = md5sum.digest( "hex" ).substring(8,24);
     console.log('===>key:',key);
 
     var url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid='+Math.trunc(Math.random()*1000);
