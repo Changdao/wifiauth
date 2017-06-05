@@ -18,11 +18,23 @@ exports.send=function(phone,msg){
     md5sum.update( epid+ua+pwdstr+msg);
     var key = md5sum.digest( "hex" );
 
-    var url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid=';
+    var url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid='+Math.trunc(Math.random()*1000);
     console.log('==>sms url:',url);
     request.get(url).on('data',function(data){
 	    console.log(data.toString());
     })
 
+};
+
+exports.genKey = function(epid,ua,pwd,msg)
+{
+    var md5pwd = crypto.createHash("md5");
+    md5pwd.update(pwd);
+    var pwdstr = md5pwd.digest('hex');
+    console.log(pwdstr);
+    var md5sum=crypto.createHash( "md5" );
+    md5sum.update( epid+ua+pwdstr+msg);
+    var key = md5sum.digest( "hex" );
+    console.log(key);
 };
 
