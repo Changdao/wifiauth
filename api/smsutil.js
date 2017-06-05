@@ -14,8 +14,12 @@ exports.send=function(phone,msg){
     md5pwd.update(pwd);
     var pwdstr = md5pwd.digest('hex');
 
+    var md5msg = crypto.createHash('md5');
+    md5msg.update(msg);
+    var msgmd5 = md5msg.digest('hex');
+
     var md5sum=crypto.createHash( "md5" );
-    md5sum.update( epid+ua+pwdstr+msg);
+    md5sum.update( epid+ua+pwdstr+msgmd5);
     var key = md5sum.digest( "hex" );
 
     var url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid='+Math.trunc(Math.random()*1000);
