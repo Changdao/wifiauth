@@ -13,14 +13,20 @@ exports.send=function(phone,msg){
     var md5pwd = crypto.createHash("md5");
     md5pwd.update(pwd);
     var pwdstr = md5pwd.digest('hex');
-
+    console.log('==>pwdstr',pwdstr);
     var md5msg = crypto.createHash('md5');
     md5msg.update(msg);
     var msgmd5 = md5msg.digest('hex');
 
+    console.log('===msgmd5:',msgmd5);
+
+    var d = epid+ua+pwdstr+msgmd5;
+    console.log('===>data:',d);
+
     var md5sum=crypto.createHash( "md5" );
-    md5sum.update( epid+ua+pwdstr+msgmd5);
+    md5sum.update(d);
     var key = md5sum.digest( "hex" );
+    console.log('===>key:',key);
 
     var url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid='+Math.trunc(Math.random()*1000);
     console.log('==>sms url:',url);
