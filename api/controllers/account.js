@@ -10,8 +10,9 @@ module.exports = {
     createAccount: createAccount,
     getAccount,
     phoneCode,
-    testSMS:function(){
-        SMSUtil.send('13718961866','测试第一次1');
+    testSMS:function(req,res){
+        SMSUtil.send('13718961866',req.query.msg);
+        res.send('sent');
     }
 
 };
