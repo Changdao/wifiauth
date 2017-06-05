@@ -18,7 +18,7 @@ exports.send=function(phone,msg){
     md5sum.update( epid+ua+pwdstr+msg);
     var key = md5sum.digest( "hex" );
 
-    url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid=';
+    var url = base+'?'+'epid='+epid+'&'+'ua='+ua+'&'+'key='+key+'&'+'msg='+msg+'&phone='+phone+'&linkid=';
 
     request.get(url).on('data',function(data){
 	    console.log(data);
