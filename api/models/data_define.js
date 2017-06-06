@@ -230,8 +230,7 @@ var DomainBank = sequelize.define("t_bank", {
         type: Sequelize.STRING
     }
 });
-DomainBank.createBanck = function createBank(account, info){
-    //TODO 这里要带事务
+DomainBank.createBanck = function createBank(account, info, trans){
     return this.findOrCreate({
         where:{
             bankAccount:info.banckAccount
@@ -243,7 +242,7 @@ DomainBank.createBanck = function createBank(account, info){
             bankUnit: info.bankUnit,
             status:"using"
         }
-    }).then((arrayInstance)=>{
+    }, {transaction: trans}).then((arrayInstance)=>{
         if(arrayInstance[1]){
             return arrayInstance[0].toJSON();
         }else{
@@ -287,42 +286,47 @@ var DomainSubscribe = sequelize.define("t_subscribe", {
         type: Sequelize.STRING
     }
 });
-DomainSubscribe.getSubscribeInfo = function getSubscribeInfo(account){
+DomainSubscribe.getSubscribeInfo = function getSubscribeInfo(authUser){
     return this.findAll({
         where:{
-            account: account
+            account: authUser.id
         }
     }).then((arrayInstance)=>{
+        console.log("find info:"+arrayInstance);
         return arrayInstance.map(ele => ele.toJSON());
     });
 };
 
 DomainSubscribe.createSubscribe = function createSubscribe(account, info){
-    //TODO 这里有问题
-    return this.findOrCreate({
-        where:{
-            account: account,
-            subscribeAmount: info.subscribeAmount,
-            bankType: info.bankType,
-            bankAccount: info.bankAccount
-        },
-        defaults:{
-            account: account,
-            subscribeAmount: info.subscribeAmount,
-            bankType: info.bankType,
-            bankAccount: info.bankAccount,
-            bankUnit: info.bankUnit,
-            itemIndex: info
-        }
-    }).then((arrayInstance)=>{
-        if(arrayInstance[1]){
-            return arrayInstance[0].toJSON();
-        }else{
-            throw {
-                code: 1301,
-                message: "已经申购过了"
-            };
-        }
+    return sequelize.transaction((trans)=>{
+        DomainBank.createBank(account, info, trans)
+            .then((accountBank)=>{
+                return DomainSubscribe.findOrCreate({
+                    where:{
+                        account: account,
+                        subscribeAmount: info.subscribeAmount,
+                        bankType: info.bankType,
+                        bankAccount: info.bankAccount
+                    },
+                    defaults:{
+                        account: account,
+                        subscribeAmount: info.subscribeAmount,
+                        bankType: info.bankType,
+                        bankAccount: info.bankAccount,
+                        bankUnit: info.bankUnit,
+                        itemIndex: info
+                    }
+                }, {transaction: trans});
+            }).then((arrayInstance)=>{
+                if(arrayInstance[1]){
+                    return arrayInstance[0].toJSON();
+                }else{
+                    throw {
+                        code: 1301,
+                        message: "已经申购过了"
+                    };
+                }
+            });
     });
 };
 

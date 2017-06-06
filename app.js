@@ -18,12 +18,6 @@ app.oauth = oauthserver({
     debug: true
 });
 
-app.all('/*', function(req, res, next){
-   res.header("Access-Control-Allow-Origin", "*");
-   res.header("Access-Control-Allow-Headers", "X-Requested-With");
-   res.header("Access-Control-Allow-Methods", "GET, POST","PUT");
-   next();
-});
 
 // Handle token grant requests
 app.all('/wifiauth/token', app.oauth.grant());
@@ -33,9 +27,9 @@ app.post('/wifiauth/phone/code', controllerAccount.phoneCode);
 
 app.post('/wifiauth/signup', controllerAccount.createAccount);
 
-app.post('/wifiauth/subscribe', app.oauth.authorise(), controllerAccount.createSubscribe);
-app.get('/wifiauth/subscribe', app.oauth.authorise(), controllerAccount.getSubscribeInfo);
-app.get('/wifiauth/account', app.oauth.authorise(), controllerAccount.getAccount);
+app.post('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.createSubscribe);
+app.get('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.getSubscribeInfo);
+app.get('/wifiauth/authed/account', app.oauth.authorise(), controllerAccount.getAccount);
 
 app.get('/wifiauth/testsms',controllerAccount.testSMS);
 

@@ -23,7 +23,6 @@ var SMSUtil = require('../smsutil');
 var DomainAccount = require("../models/data_define").DomainAccount;
 var DomainPhoneCode = require("../models/data_define").DomainPhoneCode;
 var DomainSubscribe = require("../models/data_define").DomainSubscribe;
-var DomainBank = require("../models/data_define").DomainBank;
 
 module.exports = {
     createAccount: createAccount,
@@ -106,11 +105,14 @@ function phoneCode(req, res){
  */
 function getSubscribeInfo(req, res){
     let authUser = req.user;
-    DomainSubscribe.getSubscribeInfo(authUser)
-        .then((arrayJson)=>{
-            res.status(200);
-            res.json(arrayJson);
-        });
+    console.log("user:"+JSON.stringify(authUser));
+    DomainSubscribe.getSubscribeInfo(authUser).then((arrayJson)=>{
+        res.status(200);
+        res.json(arrayJson);
+    }).catch((error)=>{
+        res.status(500);
+        res.json(error);
+    });
 };
 
 function createSubscribe(req, res){
@@ -119,10 +121,7 @@ function createSubscribe(req, res){
     let infoIsValid = !!info && info.subscribeAmount && (info.subscribeAmount > 0);
     infoIsValid = infoIsValid && info.bankType && info.bankAccount && info.bankUnit;
     if(infoIsValid){
-        DomainBank.createBank(authUser, info)
-            .then((bankInfo)=>{
-                return DomainSubscribe.createSubscribe(authUser, info);
-            })
+        DomainSubscribe.createSubscribe(authUser, info)
             .then((subscribed)=>{
                 res.status(200);
                 res.json(subscribed);
