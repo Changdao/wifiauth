@@ -29,6 +29,7 @@ module.exports = {
     createAccount: createAccount,
     getAccount,
     phoneCode,
+    createSubscribe,
     getSubscribeInfo,
     testSMS:function(req,res){
         SMSUtil.send('13718961866',req.query.msg);
@@ -122,18 +123,13 @@ function createSubscribe(req, res){
             .then((bankInfo)=>{
                 return DomainSubscribe.createSubscribe(authUser, info);
             })
-            .catch((errorInfo)=>{
-                res.status(500);
-                res.json(errorInfo);
-            });
-        DomainSubscribe.createSubscribe(authUser, info)
             .then((subscribed)=>{
                 res.status(200);
                 res.json(subscribed);
             })
-            .catch((errorResult) =>{
+            .catch((errorInfo)=>{
                 res.status(500);
-                res.json(errorResult);
+                res.json(errorInfo);
             });
     }else{
         res.status(500);
