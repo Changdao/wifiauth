@@ -128,6 +128,8 @@ function createSubscribe(req, res){
             })
             .catch((errorInfo)=>{
                 res.status(500);
+                console.log("unknown");
+                console.log(errorInfo);
                 res.json(errorInfo);
             });
     }else{

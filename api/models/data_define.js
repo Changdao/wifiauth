@@ -230,24 +230,25 @@ var DomainBank = sequelize.define("t_bank", {
         type: Sequelize.STRING
     }
 });
-DomainBank.createBanck = function createBank(account, info, trans){
+DomainBank.createBank = function createBank(authUser, info, trans){
     return this.findOrCreate({
         where:{
             bankAccount:info.banckAccount
         },
         defaults:{
-            account: account,
+            account: authUser.id,
             bankType: info.bankType,
             bankAccount: info.bankAccount,
             bankUnit: info.bankUnit,
             status:"using"
         }
     }, {transaction: trans}).then((arrayInstance)=>{
+        console.log(arrayInstance);
         if(arrayInstance[1]){
             return arrayInstance[0].toJSON();
         }else{
             let alreadyInfo = arrayInstance[0].toJSON();
-            if( alreadyInfo.account == account ){
+            if( alreadyInfo.account == authUser.id ){
                 return alreadyInfo;
             }else{
                 throw {
@@ -297,36 +298,45 @@ DomainSubscribe.getSubscribeInfo = function getSubscribeInfo(authUser){
     });
 };
 
-DomainSubscribe.createSubscribe = function createSubscribe(account, info){
+DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
     return sequelize.transaction((trans)=>{
-        DomainBank.createBank(account, info, trans)
-            .then((accountBank)=>{
-                return DomainSubscribe.findOrCreate({
-                    where:{
-                        account: account,
-                        subscribeAmount: info.subscribeAmount,
-                        bankType: info.bankType,
-                        bankAccount: info.bankAccount
-                    },
-                    defaults:{
-                        account: account,
-                        subscribeAmount: info.subscribeAmount,
-                        bankType: info.bankType,
-                        bankAccount: info.bankAccount,
-                        bankUnit: info.bankUnit,
-                        itemIndex: info
-                    }
-                }, {transaction: trans});
-            }).then((arrayInstance)=>{
-                if(arrayInstance[1]){
-                    return arrayInstance[0].toJSON();
-                }else{
-                    throw {
-                        code: 1301,
-                        message: "已经申购过了"
-                    };
-                }
-            });
+        DomainBank.create({
+            account: authUser.id,
+            bankType: info.bankType,
+            bankAccount: info.bankAccount,
+            bankUnit: info.bankUnit,
+            status:"using"
+        }, {transaction: trans}).then((bankInstance)=>{
+            return DomainBank.query({
+                bankAccount:info.banckAccount
+            },{transaction: trans});
+        }).then((arrayInstance)=>{
+            if(arrayInstance.length > 1){
+                throw {
+                    code: 1303,
+                    message: "此地址已经被使用"
+                };
+            }else if(arrayInstance.length == 0){
+                throw {
+                    code: 1304,
+                    message: "地址创建失败"
+                };
+            }else{
+                console.log(arrayInstance);
+                return arrayInstance[0];
+            }
+        }).then((bankInstance)=>{
+            return DomainSubscribe.create({
+                account: authUser.id,
+                subscribeAmount: info.subscribeAmount,
+                bankType: info.bankType,
+                bankAccount: info.bankAccount,
+                bankUnit: info.bankUnit
+            }, {transaction: trans});
+        }).then((subInstance)=>{
+            console.log(subInstance);
+            return subInstance;
+        });
     });
 };
 
