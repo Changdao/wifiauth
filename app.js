@@ -23,7 +23,8 @@ app.oauth = oauthserver({
 app.all('/wifiauth/token', app.oauth.grant());
 //上传文件
 app.post('/wifiauth/upload', upload.single('file'), controllerUpload.receiveFile);
-app.post('/wifiauth/phone/code', controllerAccount.phoneCode);
+app.post('/wifiauth/phone/code/send', controllerAccount.sendPhoneCode);
+app.post('/wifiauth/phone/code/prepare', controllerAccount.preparePhoneCode);
 
 app.post('/wifiauth/signup', controllerAccount.createAccount);
 

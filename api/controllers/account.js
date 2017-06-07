@@ -27,9 +27,10 @@ var DomainSubscribe = require("../models/data_define").DomainSubscribe;
 module.exports = {
     createAccount: createAccount,
     getAccount,
-    phoneCode,
     createSubscribe,
     getSubscribeInfo,
+    sendPhoneCode,
+    preparePhoneCode,
     testSMS:function(req,res){
         SMSUtil.send('13718961866',req.query.msg);
         res.send('sent');
@@ -80,25 +81,37 @@ function getAccount(req, res){
             res.json(error);
         });
 }
+
+
 /**
- * 短信验证码
+ * 准备短信验证码
  */
-function phoneCode(req, res){
-    //console.log(req.body.phone);
-    var phone = req.query.phone;
-    var code = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-    DomainPhoneCode.prepareAccountCode(phone, code)
-        .then((codes)=>{
-            res.status(200);
-            res.json("ok");
-            SMSUtil.send(phone,'您的验证码是'+code+"。");
-        })
-        .catch((error)=>{
-            res.status(500);
-            res.json(error);
-        });
-    //res.json({code:"633778", phone:req.body.phone});
-}
+function preparePhoneCode(req, res){
+    var prepare = req.body;
+    prepare.code = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    DomainPhoneCode.preparePhoneCode(prepare).then((result)=>{
+        res.status(200);
+        result.phoneCode = undefined;
+        res.json(result);
+    }).catch((error)=>{
+        res.status(500);
+        res.json(error);
+    });
+};
+/**
+ * 发送短信验证吗
+ */
+function sendPhoneCode(req, res){
+    var sendingData = req.body;
+    DomainPhoneCode.sendPhoneCode(sendingData).then((result)=>{
+        SMSUtil.send(result.phone,'您的注册验证码是'+result.phoneCode+"。");
+        res.status(200);
+        res.json("ok");
+    }).catch((error)=>{
+        res.status(500);
+        res.json(error);
+    });
+};
 
 /**
  * 获取订阅信息

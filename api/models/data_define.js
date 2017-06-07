@@ -52,6 +52,7 @@ var DomainAccount = sequelize.define('t_account', {
 DomainAccount.signUpAccount = function signUpAccount(newAccount){
     return DomainAccount.findRedisAccount(newAccount)
         .then((user)=>{
+            newAccount.application = newAccount.application || 'register';
             return DomainPhoneCode.checkAccountCode(newAccount);
         })
         .then((phoneCodeInstance)=>{
@@ -300,42 +301,50 @@ DomainSubscribe.getSubscribeInfo = function getSubscribeInfo(authUser){
 
 DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
     return sequelize.transaction((trans)=>{
-        DomainBank.create({
-            account: authUser.id,
-            bankType: info.bankType,
-            bankAccount: info.bankAccount,
-            bankUnit: info.bankUnit,
-            status:"using"
-        }, {transaction: trans}).then((bankInstance)=>{
-            return DomainBank.query({
+        return DomainBank.findOrCreate({
+            where:{
                 bankAccount:info.banckAccount
-            },{transaction: trans});
-        }).then((arrayInstance)=>{
-            if(arrayInstance.length > 1){
+            },
+            defaults:{
+                account: authUser.id,
+                bankType: info.bankType,
+                bankAccount: info.bankAccount,
+                bankUnit: info.bankUnit,
+                status:"using"
+            },
+            transaction: trans
+        }).then((bankInstanceArray)=>{
+            if(!bankInstanceArray[1]){
                 throw {
                     code: 1303,
                     message: "此地址已经被使用"
                 };
-            }else if(arrayInstance.length == 0){
+            }else{
+                return DomainSubscribe.findOrCreate({
+                    where:{
+                        account: authUser.id,
+                        bankType: info.bankType
+                    },
+                    defaults:{
+                        account: authUser.id,
+                        subscribeAmount: info.subscribeAmount,
+                        bankType: info.bankType,
+                        bankAccount: info.bankAccount,
+                        bankUnit: info.bankUnit,
+                        status:"waiting"
+                    },
+                    transaction: trans
+                });
+            }
+        }).then((subscribeInstanceArray)=>{
+            if(!subscribeInstanceArray[1]){
                 throw {
                     code: 1304,
-                    message: "地址创建失败"
+                    message: "您已经认购过了。如果需要调整，请修改已有认购信息。"
                 };
             }else{
-                console.log(arrayInstance);
-                return arrayInstance[0];
+                return subscribeInstanceArray[0].toJSON();
             }
-        }).then((bankInstance)=>{
-            return DomainSubscribe.create({
-                account: authUser.id,
-                subscribeAmount: info.subscribeAmount,
-                bankType: info.bankType,
-                bankAccount: info.bankAccount,
-                bankUnit: info.bankUnit
-            }, {transaction: trans});
-        }).then((subInstance)=>{
-            console.log(subInstance);
-            return subInstance;
         });
     });
 };
@@ -367,6 +376,13 @@ var DomainDictionary = sequelize.define("t_dictionary", {
     }
 });
 var DomainPhoneCode = sequelize.define("t_phone_code", {
+    uuid:{
+        type: Sequelize.STRING,
+        field: "uuid"
+    },
+    application:{
+        type: Sequelize.STRING
+    },
     phone:{
         type: Sequelize.STRING,
         field: "phone"
@@ -375,32 +391,52 @@ var DomainPhoneCode = sequelize.define("t_phone_code", {
         type: Sequelize.STRING,
         field: "phone_code"
     },
+    createdAt:{
+        type: Sequelize.DATE,
+        field: "created_at"
+    },
     status:{
         type: Sequelize.STRING
     }
 });
-DomainPhoneCode.prepareAccountCode = function preppareAccountCode(phone, code){
+DomainPhoneCode.preparePhoneCode = function preparePhoneCode(codeInfo){
     return this.findOrCreate({
         where:{
-            phone:phone,
-            created_at : {
-                $gt: new Date(new Date() - 2 * 60 * 1000)
-            }
+            uuid:codeInfo.uuid,
+            application: codeInfo.application,
+            status:'sending'
         },
         defaults:{
-            phone: phone,
-            phoneCode:code,
+            uuid: codeInfo.uuid,
+            phoneCode:codeInfo.code,
+            application:codeInfo.application,
             status:'sending'
         }
     }).then((arrayInstance)=>{
         if(arrayInstance[1]){//created
-            return arrayInstance[0];
+            return arrayInstance[0].toJSON();
         }else{
             throw {
                 code: 1201,
-                message: "已经发送验证码了，请耐心等待"
+                message: "已经准备好注册了",
+                info: arrayInstance[0].toJSON()
             };
         }
+    });
+};
+DomainPhoneCode.sendPhoneCode = function sendPhoneCode(codeInfo){
+    return this.findOne({
+        where:{
+            uuid:codeInfo.uuid,
+            application: codeInfo.application,
+            status:'sending'
+        }
+    }).then((codeInstance)=>{
+        codeInstance.set("status", "sent");
+        codeInstance.set("phone",  codeInfo.phone);
+        return codeInstance.save();
+    }).then((codeInstance)=>{
+        return codeInstance.toJSON();
     });
 };
 DomainPhoneCode.checkAccountCode = function checkAccountCode(newAccount){
@@ -408,19 +444,19 @@ DomainPhoneCode.checkAccountCode = function checkAccountCode(newAccount){
     return this.findOne({
         where:{
             phone: newAccount.phone,
-            phoneCode : newAccount.phoneCode
+            phoneCode : newAccount.phoneCode,
+            application: newAccount.application,
+            status: 'sent'
         }
     }).then((instance)=>{
-        return instance;
-        /**
         if(instance){
+            return instance;
         }else{
             throw {
                 code: 1102,
                 message: "无效的短信验证码"
             };
         }
-         **/
     });
 };
 

@@ -67,8 +67,19 @@ create table if not exists t_dictionary (
 
 create table if not exists t_phone_code (
    id bigserial primary key,
+   uuid varchar(100),
+   application varchar(40),
    phone varchar(40),
    phone_code varchar(40),
+   status varchar(40) default 'enabled',
+   created_at timestamp default current_timestamp,
+   updated_at timestamp
+);
+
+create table if not exists t_request_mask (
+   id bigserial primary key,
+   request_url varchar(1000),
+   mask_code varchar(40),
    status varchar(40),
    created_at timestamp default current_timestamp,
    updated_at timestamp
