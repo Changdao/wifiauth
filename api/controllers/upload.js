@@ -2,9 +2,10 @@
 
 
 var util = require("util");
-
+var Path = require('path');
 module.exports = {
-    receiveFile: receiveFile
+    receiveFile: receiveFile,
+    sendFile
 };
 
 
@@ -23,3 +24,10 @@ function receiveFile(req, res, next){
     }
     next();
 };
+
+function sendFile(req, res, next){
+    var fileName = req.params.filename;
+    var filePath = Path.resolve(`${__dirname}/../../uploads/${fileName}`);
+    console.log('==>path:',filePath);
+    res.sendFile(filePath);
+}
