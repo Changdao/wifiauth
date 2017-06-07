@@ -48,7 +48,7 @@ function createAccount(req, res){
         code: 1100,
         message: "没有提供有效参数"
     };
-    let available = account && account.account && account.password;
+    let available = account && account.account && account.password && account.agreeliscense && account.isintegrity;
     if(!available) {
         res.json(result);
         return;
