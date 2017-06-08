@@ -93,5 +93,5 @@ ALTER TABLE public.t_bank
     ADD CONSTRAINT banktypebankaccount UNIQUE (bank_type, bank_account);
 
 ALTER TABLE public.t_subscribe
-    ADD CONSTRAINT banktypebankaccount UNIQUE (bank_type, bank_account);
+    ADD CONSTRAINT subscribebanktypebankaccount UNIQUE (bank_type, bank_account);
 
