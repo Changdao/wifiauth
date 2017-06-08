@@ -33,11 +33,12 @@ create table if not exists t_bank (
    id bigserial primary key,
    account varchar(400),
    bank_type varchar(400),
-   bank_account varchar(400),
+   bank_account varchar(400) default 'unkown',
    bank_unit varchar(40),
    status varchar(40),
    created_at timestamp default current_timestamp,
-   updated_at timestamp
+   updated_at timestamp,
+   unique ( bank_type, bank_account)
 );
 
 create table if not exists t_subscribe (
@@ -50,7 +51,8 @@ create table if not exists t_subscribe (
    status varchar(40),
    item_index varchar(100),
    created_at timestamp default current_timestamp,
-   updated_at timestamp
+   updated_at timestamp,
+   unique ( bank_type, bank_account)
 );
 
 create table if not exists t_dictionary (
@@ -84,4 +86,12 @@ create table if not exists t_request_mask (
    created_at timestamp default current_timestamp,
    updated_at timestamp
 );
+
+
+
+ALTER TABLE public.t_bank
+    ADD CONSTRAINT banktypebankaccount UNIQUE (bank_type, bank_account);
+
+ALTER TABLE public.t_subscribe
+    ADD CONSTRAINT banktypebankaccount UNIQUE (bank_type, bank_account);
 

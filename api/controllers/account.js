@@ -149,7 +149,7 @@ function createSubscribe(req, res){
         res.status(500);
         res.json({
             code: 1302,
-            message: "信息不完整: subscribeAmount, bankType, bankAccount, bankUnit"
+            message: "信息不正确: subscribeAmount, bankType, bankAccount, bankUnit"
         });
     }
 }
