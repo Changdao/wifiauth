@@ -303,8 +303,8 @@ DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
     return sequelize.transaction((trans)=>{
         return DomainBank.findOrCreate({
             where: {
-                bankType: info.bankType,
-                bankAccount : info.bankAccount
+                account: authUser.id,
+                bankType: info.bankType
             },
             defaults:{
                 account: authUser.id,
@@ -315,19 +315,17 @@ DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
             },
             transaction: trans
         }).then((bankInstanceArray)=>{
-            let bankJson = bankInstanceArray[0].toJSON();
-            if(!bankInstanceArray[1]){//has the record, need check the user
-                if( bankJson.account != authUser.id ) {
-                    throw {
-                        code: 1303,
-                        message: `${bankJson.bankType}\'s ${bankJson.bankAccount} has been used.`
-                    };
-                };
+            let bankInstance = bankInstanceArray[0];
+            if(!bankInstanceArray[1]){//has the record, need check the user, 需要设置地址
+                bankInstance.set('bankAccount', info.bankAccount);
+                return bankInstance.save({ transaction: trans } );
             };
+            return bankInstance;
+        }).then((bankInstance)=>{
             return DomainSubscribe.findOrCreate({
                 where:{
-                    bankType: info.bankType,
-                    bankAccount: info.bankAccount
+                    account: authUser.id,
+                    bankType: info.bankType
                 },
                 defaults:{
                     account: authUser.id,
@@ -341,23 +339,23 @@ DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
             });
         }).then((subscribeInstanceArray)=>{
             let subscribeInstance = subscribeInstanceArray[0];
-            let subscribeJson = subscribeInstance.toJSON();
+            console.log(subscribeInstance.toJSON());
+            console.log(info);
             if(!subscribeInstanceArray[1]){
-                if( subscribeJson.account != authUser.id ) {
-                    throw {                        
-                        code: 1304,
-                        message: "此币种地址已经被用户申报了。如果需要，请修改认购申报信息。"
-                    };
-                }else{
-                    subscribeInstance.set("subscribeAmount", info.subscribeAmount);
-                    return subscribeInstance.save({transaction:trans});
-                }
-            }else{
-                return subscribeInstance;
+                subscribeInstance.set("subscribeAmount", info.subscribeAmount);
+                subscribeInstance.set("bankAccount", info.bankAccount);
+                return subscribeInstance.save({transaction:trans});
             }
+            return subscribeInstance;
         }).then((subscribeInstance)=>{
             return subscribeInstance.toJSON();
         });
+    }).catch((error)=>{
+        //地址异常
+        throw {
+            code: 1303,
+            message: `${info.bankType}\'s ${info.bankAccount} has been used.`
+        };
     });
 };
 
