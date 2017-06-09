@@ -38,6 +38,7 @@ create table if not exists t_bank (
    status varchar(40),
    created_at timestamp default current_timestamp,
    updated_at timestamp,
+   unique ( account, bank_type ),
    unique ( bank_type, bank_account)
 );
 
@@ -52,6 +53,7 @@ create table if not exists t_subscribe (
    item_index varchar(100),
    created_at timestamp default current_timestamp,
    updated_at timestamp,
+   unique ( account, bank_type),
    unique ( bank_type, bank_account)
 );
 
@@ -89,9 +91,13 @@ create table if not exists t_request_mask (
 
 
 
+ALTER TABLE t_bank ADD CONSTRAINT t_bank_account_bank_type UNIQUE (account, bank_type);
+
 ALTER TABLE public.t_bank
     ADD CONSTRAINT banktypebankaccount UNIQUE (bank_type, bank_account);
 
 ALTER TABLE public.t_subscribe
     ADD CONSTRAINT subscribebanktypebankaccount UNIQUE (bank_type, bank_account);
 
+
+ALTER TABLE t_subscribe ADD CONSTRAINT t_subscribe_account_bank_type UNIQUE ( account, bank_type );
