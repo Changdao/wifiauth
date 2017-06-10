@@ -49,6 +49,21 @@ var DomainAccount = sequelize.define('t_account', {
         field:"account_type"
     }
 });
+function singUpAccountOfDomain(newAccount){
+    return sequelize.transaction((trans)=>{
+        newAccount.application = newAccount.application || 'register';
+        let curDateLimit = new Date(
+        return DomainPhoneCode.findOne({
+            where:{
+                phone: newAccount.phone,
+                application: newAccount.application,
+                status:"sent"
+            },
+            transaction: trans
+        }).then((instance)=>{
+        });
+    });
+};
 DomainAccount.signUpAccount = function signUpAccount(newAccount){
     return DomainAccount.findRedisAccount(newAccount)
         .then((user)=>{
