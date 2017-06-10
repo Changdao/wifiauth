@@ -10,7 +10,8 @@ create table if not exists t_account (
    status varchar(40),
    promoter integer,
    updated_at timestamp,
-   account_type integer
+   account_type integer,
+   unique( account )
 );
 
 create table if not exists t_identify (
@@ -26,7 +27,8 @@ create table if not exists t_identify (
    hand_img_file_code varchar(100),
    status varchar(40),
    created_at timestamp default current_timestamp,
-   updated_at timestamp
+   updated_at timestamp,
+   unique( identifier_type, identifier_code )
 );
 
 create table if not exists t_bank (

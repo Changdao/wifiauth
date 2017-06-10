@@ -34,7 +34,7 @@ var DomainAccount = sequelize.define('t_account', {
     password:{
         type:Sequelize.STRING
     },
-    createAt:{
+    createdAt:{
         type:Sequelize.DATE,
         field:"created_at"
     },
@@ -49,39 +49,110 @@ var DomainAccount = sequelize.define('t_account', {
         field:"account_type"
     }
 });
-function singUpAccountOfDomain(newAccount){
+function signUpAccountOfDomain(newAccount, minutes){
+    let userKey = redisKey(formats.user, newAccount.account);
+    let getUser = redis.hgetallAsync(userKey);
+    let accountInfo = {
+        username: newAccount.account,
+        password: newAccount.password
+    };
     return sequelize.transaction((trans)=>{
         newAccount.application = newAccount.application || 'register';
-        let curDateLimit = new Date(
+        let curDateLimit = new Date(new Date() - (minutes || 10) * 60 * 1000 );
         return DomainPhoneCode.findOne({
             where:{
                 phone: newAccount.phone,
                 application: newAccount.application,
-                status:"sent"
+                status:"sent",
+                createdAt:{
+                    $gt: curDateLimit
+                },
+                phoneCode: newAccount.phoneCode
             },
             transaction: trans
         }).then((instance)=>{
+            if(!instance){
+                throw {
+                    code: 1102,
+                    message: "无效的短信验证码"
+                };
+            }else{
+                return instance;
+            }
+        }).then((phoneCodeInstance)=>{
+            return DomainAccount.findOrCreate({
+                where:{
+                    account:newAccount.account
+                },
+                defaults: {
+                    account: newAccount.account,
+                    password: newAccount.password,
+                    accountName: newAccount.accountName || newAccount.account,
+                    status: newAccount.status || 'enabled',
+                    accountType: newAccount.accountType || 0,
+                    promoter: newAccount.promoter,
+                    gender: newAccount.gender,
+                    avatar: newAccount.avatar,
+                    phone: newAccount.phone
+                },
+                transaction:trans
+            });
+        }).then((accountInstanceArray)=>{
+            if(!(accountInstanceArray[1])){
+                throw {
+                    code: 1103,
+                    message: "已经存在此用户授权同步出错。redis与psql不一致。"
+                };
+            }else{
+                return accountInstanceArray[0];
+            };
+        }).then((accountInstance)=>{
+            return DomainIdentify.findOrCreate({
+                where:{
+                    account: newAccount.account,
+                    identifierType: newAccount.identifierType
+                },
+                defaults:{
+                    account: newAccount.account,
+                    identifierType: newAccount.identifierType,
+                    identifierCode: newAccount.identifier,
+                    frontImgFile:newAccount.front.path,
+                    frontImgFileCode: newAccount.front.filename,
+                    backImgFile: newAccount.back.path,
+                    backImgFileCode: newAccount.back.filename,
+                    handImgFile: newAccount.hand.path,
+                    handImgFileCode: newAccount.hand.filename,
+                    status: "enabled"
+                },
+                transaction: trans
+            });
+        }).then((identifyInstanceArray)=>{
+            if(identifyInstanceArray[1]){
+                return identifyInstanceArray[0];
+            }else{
+                throw {
+                    code: 1103,
+                    message: "认证信息已经使用"
+                };
+            }
+        }).then((identifyInstance)=>{
+            return redis.hmsetAsync(userKey, accountInfo);
         });
-    });
+    }).catch((error)=>{
+        return redis.delAsync(userKey).then((deluser)=>{
+            throw error;
+        });
+    });;
 };
 DomainAccount.signUpAccount = function signUpAccount(newAccount){
-    return DomainAccount.findRedisAccount(newAccount)
-        .then((user)=>{
-            newAccount.application = newAccount.application || 'register';
-            return DomainPhoneCode.checkAccountCode(newAccount);
-        })
-        .then((phoneCodeInstance)=>{
-            return DomainAccount.createAccount(newAccount);
-        })
-        .then((accountInstance)=>{
-            return DomainIdentify.addAccountIdentify(newAccount);
-        })
-        .then((indentifierInstance)=>{
-            return {
-                code: 0,
-                message: "ok"
-            };
-        });
+    return DomainAccount.findRedisAccount(newAccount).then((user)=>{
+        return signUpAccountOfDomain(newAccount, 5);
+    }).then((identifyInstance)=>{
+        return {
+            code: 0,
+            message: "ok"
+        };
+    });
 };
 DomainAccount.findRedisAccount = function findReidsAccount(newAccount){
     let userKey = redisKey(formats.user, newAccount.account);
@@ -96,34 +167,6 @@ DomainAccount.findRedisAccount = function findReidsAccount(newAccount){
             return user;
         }
     });
-};
-DomainAccount.createAccount = function signUpAccount(newAccount){
-    let userKey = redisKey(formats.user, newAccount.account);
-    let getUser = redis.hgetallAsync(userKey);
-    let accountInfo = {
-        username: newAccount.account,
-        password: newAccount.password
-    };
-    return redis.hmsetAsync(userKey, accountInfo)
-        .then(()=>{
-            return this.findOrCreate({
-                where:{
-                    account:newAccount.account
-                },
-                defaults: {
-                    account: newAccount.account,
-                    password: newAccount.password,
-                    accountName: newAccount.accountName || newAccount.account,
-                    status: newAccount.status || 'enabled',
-                    accountType: newAccount.accountType || 0,
-                    promoter: newAccount.promoter,
-                    gender: newAccount.gender,
-                    avatar: newAccount.avatar,
-                    phone: newAccount.phone
-                }
-            });
-        });
-    
 };
 DomainAccount.getAccountInfo = function getAccountInfo(authUser){
     return this.findOne({
@@ -462,26 +505,6 @@ DomainPhoneCode.sendPhoneCode = function sendPhoneCode(codeInfo){
         return codeInstance.save();
     }).then((codeInstance)=>{
         return codeInstance.toJSON();
-    });
-};
-DomainPhoneCode.checkAccountCode = function checkAccountCode(newAccount){
-    let validDate = new Date();
-    return this.findOne({
-        where:{
-            phone: newAccount.phone,
-            phoneCode : newAccount.phoneCode,
-            application: newAccount.application,
-            status: 'sent'
-        }
-    }).then((instance)=>{
-        if(instance){
-            return instance;
-        }else{
-            throw {
-                code: 1102,
-                message: "无效的短信验证码"
-            };
-        }
     });
 };
 

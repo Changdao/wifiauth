@@ -49,12 +49,14 @@ function createAccount(req, res){
         message: "没有提供有效参数"
     };
     let available = account && account.account && account.password && account.agreeliscense && account.isIntegrity;
+    available = available && account.account.trim();
     if(!available) {
         res.json(result);
         return;
     };
     delete(account.id);
     account.identifierType = account.identifierType || 'identifier';
+    account.account = account.account.trim();
     DomainAccount.signUpAccount(account)
         .then((result)=>{
             res.status(200);
