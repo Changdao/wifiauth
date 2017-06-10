@@ -104,7 +104,7 @@ function preparePhoneCode(req, res){
 function sendPhoneCode(req, res){
     var sendingData = req.body;
     DomainPhoneCode.sendPhoneCode(sendingData).then((result)=>{
-        SMSUtil.send(result.phone,'您的注册验证码是'+result.phoneCode+"。");
+        SMSUtil.send(result.phone,'您的注册验证码是'+result.phoneCode+"。退订回 T 。");
         res.status(200);
         res.json("ok");
     }).catch((error)=>{
