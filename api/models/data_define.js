@@ -354,7 +354,8 @@ DomainSubscribe.getSubscribeInfo = function getSubscribeInfo(authUser){
     return this.findAll({
         where:{
             account: authUser.id
-        }
+        },
+        limit: 50
     }).then((arrayInstance)=>{
         console.log("find info:"+arrayInstance);
         return arrayInstance.map(ele => ele.toJSON());
