@@ -342,6 +342,10 @@ var DomainSubscribe = sequelize.define("t_subscribe", {
         type:Sequelize.STRING,
         field: "item_index"
     },
+    createdAt:{
+        type:Sequelize.DATE,
+        field:"created_at"
+    },
     status:{
         type: Sequelize.STRING
     }
@@ -385,7 +389,8 @@ DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
                     account: authUser.id,
                     bankType: info.bankType,
                     bankAccount: info.bankAccount,
-                    subscribeAmount: info.subscribeAmount
+                    subscribeAmount: info.subscribeAmount,
+                    createdAt: undefined
                 },
                 defaults:{
                     account: authUser.id,

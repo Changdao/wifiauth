@@ -120,3 +120,21 @@ ALTER TABLE public.t_subscribe
     ADD CONSTRAINT t_subscribe_bank_type_bank_account_subscribe_amount UNIQUE (bank_type, bank_account, subscribe_amount);
 
 
+
+
+ALTER TABLE public.t_bank
+    ADD CONSTRAINT banktypebankaccount UNIQUE (bank_type, bank_account);
+
+ALTER TABLE t_bank ADD CONSTRAINT t_bank_account_bank_type UNIQUE (account, bank_type);
+
+ALTER TABLE public.t_bank DROP CONSTRAINT t_bank_account_bank_type;
+
+
+
+ALTER TABLE public.t_subscribe DROP CONSTRAINT t_subscribe_bank_type_bank_account_subscribe_amount;
+
+create index t_subscribe_bank_type_bank_account_subscribe_amount on t_subscribe (bank_type, bank_account, subscribe_amount);
+
+
+
+
