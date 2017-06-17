@@ -350,12 +350,13 @@ var DomainSubscribe = sequelize.define("t_subscribe", {
         type: Sequelize.STRING
     }
 });
-DomainSubscribe.getSubscribeInfo = function getSubscribeInfo(authUser){
+DomainSubscribe.getSubscribeInfo = function getSubscribeInfo(authUser, query){
     return this.findAll({
         where:{
             account: authUser.id
         },
-        limit: 50
+        limit: query.limit,
+        offset: query.offset
     }).then((arrayInstance)=>{
         console.log("find info:"+arrayInstance);
         return arrayInstance.map(ele => ele.toJSON());

@@ -120,10 +120,17 @@ function sendPhoneCode(req, res){
  */
 function getSubscribeInfo(req, res){
     let authUser = req.user;
-    console.log("user:"+JSON.stringify(authUser));
-    DomainSubscribe.getSubscribeInfo(authUser).then((arrayJson)=>{
+    let query = req.query || {};
+    query.limit = query.limit || 50;
+    query.offset = (query.start || 0) * query.limit;
+    DomainSubscribe.getSubscribeInfo(authUser, query).then((arrayJson)=>{
         res.status(200);
-        res.json(arrayJson);
+        let result = {
+            arrayData: arrayJson,
+            start : query.start,
+            limit : query.limit
+        };
+        res.json(result);
     }).catch((error)=>{
         res.status(500);
         res.json(error);
