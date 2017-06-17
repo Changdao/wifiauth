@@ -361,8 +361,9 @@ DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
     return sequelize.transaction((trans)=>{
         return DomainBank.findOrCreate({
             where: {
-                account: authUser.id,
-                bankType: info.bankType
+                bankType: info.bankType,
+                bankAccount: info.bankAccount,
+                account: authUser.id
             },
             defaults:{
                 account: authUser.id,
@@ -383,7 +384,8 @@ DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
             return DomainSubscribe.findOrCreate({
                 where:{
                     account: authUser.id,
-                    bankType: info.bankType
+                    bankType: info.bankType,
+                    bankAccount: info.bankAccount
                 },
                 defaults:{
                     account: authUser.id,
