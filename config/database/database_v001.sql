@@ -114,3 +114,9 @@ create index if not exists t_bank_account_bank_type_bank_account on t_bank (acco
 create index if not exists t_subscribe_account_bank_type_bank_account on t_subscribe (account, bank_type, bank_account);
 
 
+ALTER TABLE public.t_subscribe DROP CONSTRAINT banktypebankaccount;
+
+ALTER TABLE public.t_subscribe
+    ADD CONSTRAINT t_subscribe_bank_type_bank_account_subscribe_amount UNIQUE (bank_type, bank_account, subscribe_amount);
+
+

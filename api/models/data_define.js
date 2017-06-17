@@ -362,8 +362,7 @@ DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
         return DomainBank.findOrCreate({
             where: {
                 bankType: info.bankType,
-                bankAccount: info.bankAccount,
-                account: authUser.id
+                bankAccount: info.bankAccount
             },
             defaults:{
                 account: authUser.id,
@@ -385,7 +384,8 @@ DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
                 where:{
                     account: authUser.id,
                     bankType: info.bankType,
-                    bankAccount: info.bankAccount
+                    bankAccount: info.bankAccount,
+                    subscribeAmount: info.subscribeAmount
                 },
                 defaults:{
                     account: authUser.id,
