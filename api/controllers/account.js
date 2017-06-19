@@ -23,6 +23,8 @@ var SMSUtil = require('../smsutil');
 var DomainAccount = require("../models/data_define").DomainAccount;
 var DomainPhoneCode = require("../models/data_define").DomainPhoneCode;
 var DomainSubscribe = require("../models/data_define").DomainSubscribe;
+var Jimp = require('jimp');
+var Path = require('path');
 
 module.exports = {
     createAccount: createAccount,
@@ -31,11 +33,8 @@ module.exports = {
     getSubscribeInfo,
     sendPhoneCode,
     preparePhoneCode,
-    testSMS:function(req,res){
-        SMSUtil.send('13718961866',req.query.msg);
-        res.send('sent');
-    }
-
+    refreshVerifyCode,
+    refreshVerifyCodeImage
 };
 
 /**
@@ -161,4 +160,57 @@ function createSubscribe(req, res){
             message: "信息不正确: subscribeAmount, bankType, bankAccount, bankUnit"
         });
     }
+}
+
+var base = "0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,g,h,j,k,l,m,n,p,q,r,s,t,u,v,w,x,y".split(',');
+var baseLength = base.length;
+function randomChar(){
+    let rcIndex = Math.floor(Math.random()*baseLength);
+    return base[rcIndex];
+};
+let arrayBase = new Array(6).fill(1);
+let pngBase = {};
+
+function refreshVerifyCode(req, res){
+    let info = req.body;
+    let infoIsValid = !!info && info.id && info.uuid;
+    if(infoIsValid){
+        let charArray = arrayBase.map((ele) => randomChar());
+        let fileArray = charArray.map((ele) => `base/r${ele}.png`);
+        let date = new Date();
+        let targetPath = Path.resolve(`${__dirname}/../../verifycode/verify_${info.id}_${date.getTime()}.png`);
+        info.verifyCode = charArray.join('');
+        DomainPhoneCode.refreshVerifyCode(info).then(()=>{
+            return Jimp.read('test.png').then((testpng)=>{
+                return Promise.all([testpng, pngBase[charArray[0]]|| Jimp.read(fileArray[0]), pngBase[charArray[1]] ||Jimp.read(fileArray[1]),pngBase[charArray[2]] ||Jimp.read(fileArray[2]),pngBase[charArray[3]] ||Jimp.read(fileArray[3]),pngBase[charArray[4]] ||Jimp.read(fileArray[4]),pngBase[charArray[5]] ||Jimp.read(fileArray[5])]);
+            });
+        }).then((values)=>{
+            let base = values[0];
+            for(let idx = 0; idx < 6; ++idx){
+                pngBase[charArray[idx]] = pngBase[fileArray[idx]] || values[idx+1];
+                base.composite(values[idx+1].clone().rotate(Math.random()*90 - 45),(9 + 22 * idx), 10);
+            };
+            base.write(targetPath);
+            return base;
+        }).then((returnImage)=>{
+            res.status(200);
+            res.json({id:info.id, timestamp:date.getTime()});
+        }).catch((err)=>{
+            res.status(500);
+            res.json(err);
+        });
+    }else {
+        res.status(500);
+        res.json({
+            code: 1501,
+            message: "信息不正确: id, uuid"
+        });
+    }
+};
+
+function refreshVerifyCodeImage(req, res){
+    var codeId = req.params.id;
+    var codeTimestamp = req.params.timestamp;
+    let targetPath = Path.resolve(`${__dirname}/../../verifycode/verify_${codeId}_${codeTimestamp}.png`);
+    res.sendFile(targetPath);
 }

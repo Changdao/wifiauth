@@ -1,5 +1,9 @@
 var Sequelize = require('../../config/database/sequelize').Sequelize;
 var sequelize = require('../../config/database/sequelize').sequelize;
+require('pg').types.setTypeParser(1114, stringValue => {
+  return new Date(stringValue + "+0000");
+  // e.g., UTC offset. Use any offset that you would like.
+});
 var bluebird = require('bluebird');
 var redisdb = require('redis');
 var redis = redisdb.createClient();
@@ -237,37 +241,6 @@ var DomainIdentify = sequelize.define("t_identify", {
         type: Sequelize.STRING
     }
 });
-DomainIdentify.addAccountIdentify = function addAccountIdentify(newAccount){
-    return this.findOrCreate({
-        where:{
-            account: newAccount.account,
-            identifierType: newAccount.identifierType
-        },
-        defaults:{
-            account: newAccount.account,
-            identifierType: newAccount.identifierType,
-            identifierCode: newAccount.identifier,
-            frontImgFile:newAccount.front.path,
-            frontImgFileCode: newAccount.front.filename,
-            backImgFile: newAccount.back.path,
-            backImgFileCode: newAccount.back.filename,
-            handImgFile: newAccount.hand.path,
-            handImgFileCode: newAccount.hand.filename,
-            status: "enabled"
-        }
-    }).then((instanceArrays)=>{
-        if(instanceArrays[1]){
-            console.log(instanceArrays[0]);
-        }else{
-            console.log("has the identifier");
-            let result = {
-                code: 1103,
-                message: "认证信息已经使用"
-            };
-        }
-        return instanceArrays;
-    });
-};
 
 var DomainBank = sequelize.define("t_bank", {
     account: {
@@ -406,8 +379,6 @@ DomainSubscribe.createSubscribe = function createSubscribe(authUser, info){
             });
         }).then((subscribeInstanceArray)=>{
             let subscribeInstance = subscribeInstanceArray[0];
-            console.log(subscribeInstance.toJSON());
-            console.log(info);
             if(!subscribeInstanceArray[1]){
                 subscribeInstance.set("subscribeAmount", info.subscribeAmount);
                 subscribeInstance.set("bankAccount", info.bankAccount);
@@ -474,6 +445,10 @@ var DomainPhoneCode = sequelize.define("t_phone_code", {
     },
     status:{
         type: Sequelize.STRING
+    },
+    verifyCode:{
+        type: Sequelize.STRING,
+        field:"verify_code"
     }
 });
 DomainPhoneCode.preparePhoneCode = function preparePhoneCode(codeInfo){
@@ -504,16 +479,39 @@ DomainPhoneCode.preparePhoneCode = function preparePhoneCode(codeInfo){
 DomainPhoneCode.sendPhoneCode = function sendPhoneCode(codeInfo){
     return this.findOne({
         where:{
+            id: codeInfo.id,
             uuid:codeInfo.uuid,
-            application: codeInfo.application,
-            status:'sending'
+            application: codeInfo.application
         }
     }).then((codeInstance)=>{
+        if(codeInstance.get('verifyCode') != codeInfo.verifyCode){
+            throw {
+                code: 1503,
+                message: "人机验证码不正确"
+            };
+        }
         codeInstance.set("status", "sent");
         codeInstance.set("phone",  codeInfo.phone);
         return codeInstance.save();
     }).then((codeInstance)=>{
         return codeInstance.toJSON();
+    });
+};
+DomainPhoneCode.refreshVerifyCode = function refreshVerifyCode(codeInfo){
+    return this.update({ verifyCode:codeInfo.verifyCode }, {
+        where: {
+            id: codeInfo.id,
+            uuid: codeInfo.uuid
+        }
+    }).then((arrayInstance)=>{
+        if(arrayInstance[0] == 1){
+            return arrayInstance[0];
+        }else{
+            throw {
+                code: 1502,
+                message: "请求的数据不存在: id, uuid"
+            };
+        }
     });
 };
 

@@ -26,6 +26,8 @@ app.post('/wifiauth/upload', upload.single('file'), controllerUpload.receiveFile
 app.get('/wifiauth/uploads/:filename', controllerUpload.sendFile);
 app.post('/wifiauth/phone/code/send', controllerAccount.sendPhoneCode);
 app.post('/wifiauth/phone/code/prepare', controllerAccount.preparePhoneCode);
+app.post('/wifiauth/code/verify/refresh', controllerAccount.refreshVerifyCode);
+app.get('/wifiauth/code/verify/:id/:timestamp', controllerAccount.refreshVerifyCodeImage);
 
 app.post('/wifiauth/signup', controllerAccount.createAccount);
 
