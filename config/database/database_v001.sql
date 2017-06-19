@@ -75,6 +75,7 @@ create table if not exists t_phone_code (
    id bigserial primary key,
    uuid varchar(100),
    application varchar(40),
+   verify_code varchar(40),
    phone varchar(40),
    phone_code varchar(40),
    status varchar(40) default 'enabled',
@@ -90,7 +91,6 @@ create table if not exists t_request_mask (
    created_at timestamp default current_timestamp,
    updated_at timestamp
 );
-
 
 
 ALTER TABLE t_bank ADD CONSTRAINT t_bank_account_bank_type UNIQUE (account, bank_type);
@@ -136,5 +136,6 @@ ALTER TABLE public.t_subscribe DROP CONSTRAINT t_subscribe_bank_type_bank_accoun
 create index t_subscribe_bank_type_bank_account_subscribe_amount on t_subscribe (bank_type, bank_account, subscribe_amount);
 
 
+alter table t_phone_code add column verify_code varchar(40);
 
 
