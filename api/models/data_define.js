@@ -484,6 +484,7 @@ DomainPhoneCode.sendPhoneCode = function sendPhoneCode(codeInfo){
             application: codeInfo.application
         }
     }).then((codeInstance)=>{
+        console.log(codeInstance);
         if(codeInstance.get('verifyCode') != codeInfo.verifyCode){
             throw {
                 code: 1503,
