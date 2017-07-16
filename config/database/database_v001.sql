@@ -138,4 +138,70 @@ create index t_subscribe_bank_type_bank_account_subscribe_amount on t_subscribe 
 
 alter table t_phone_code add column verify_code varchar(40);
 
+-- 2017 06 24 版本变动
 
+ALTER TABLE public.t_bank
+    ADD COLUMN amount_in double precision;
+
+ALTER TABLE public.t_bank
+    ADD COLUMN amount_out double precision;
+
+ALTER TABLE public.t_bank
+    ADD COLUMN usent double precision;
+
+
+create table if not exists t_tx_eth_list(
+   id bigserial primary key,
+   tx_type varchar(40),
+   tx_hash varchar(1000),
+   tx_sender varchar(1000),
+   recipient varchar(1000),
+   accountNonce varchar(40),
+   price  bigint,
+   gas_limit bigint,
+   amount numeric(40),
+   block_id bigint,
+   tx_time timestamp,
+   new_contract  bigint,
+   is_contract_tx varchar(40),
+   block_hash varchar(1000),
+   parent_hash varchar(1000),
+   tx_index varchar(40),
+   gas_used bigint,
+   status varchar(40) default 'confirming',
+   account varchar(40),
+   created_at timestamp default current_timestamp,
+   updated_at timestamp
+);
+
+create table if not exists t_tx_btc_input(
+    id bigserial primary key,
+    btc_ver int,
+    seq bigint,
+    spent boolean,
+    pre_tx_index bigint,
+    pre_tx_type int,
+    addr varchar(1000),
+    pre_Value numeric(40),
+    n int,
+    pre_script varchar(1000),
+    input_script varchar(1000),
+    block_height int,
+    relayed_by varchar(40),
+    lock_time int,
+    tx_result int,
+    tx_size int,
+    tx_time bigint,
+    tx_index int,
+    vin_sz int,
+    tx_hash varchar(1000),
+    vout_sz int,
+    tx_method int,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp
+    
+);
+
+
+create table t_bak as (select * from t_bank);
+create table t_sub as (select * from t_subscribe);

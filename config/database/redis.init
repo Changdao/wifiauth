@@ -7,4 +7,3 @@ HMSET "users:admin" id admin username administrator password 123456
 wificurrency:d2lmaWN1cnJlb
 d2lmaWN1cnJlbmN5OmQybG1hV04xY25KbGI=
 
-
