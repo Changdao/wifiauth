@@ -48,7 +48,7 @@ app.get('/public', function (req, res) {
 app.use(app.oauth.errorHandler());
 
 var port = process.env.PORT || 10010;
-app.listen(port,'127.0.0.1');
+app.listen(port);
 
 // for test
 module.exports = app;
