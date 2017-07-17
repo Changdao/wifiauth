@@ -188,15 +188,57 @@ DomainAccount.testPhoneExist = function testPhoneExist(phone){
 };
 DomainAccount.deleteAccountFromRedis = function deleteAccountFromRedis(account){
     let userKey = redisKey(formats.user, account);
-    return redis.delAsync(userKey)
-        .then((deled)=>{
-            return this.update({status:"disabled"},{
-                where:{
-                    account
-                }
-            });
+    return redis.delAsync(userKey).then((deled)=>{
+        return this.update({status:"disabled"},{
+            where:{
+                account
+            }
         });
+    });
 };
+DomainAccount.resetPassword = function resetPassword(resetData, minutes){
+    let curDateLimit = new Date(new Date() - (minutes || 10) * 60 * 1000 );
+    return sequelize.transaction((trans)=>{
+        return DomainPhoneCode.findOne({
+            where:{
+                phone: resetData.account,
+                application: resetData.application || 'resetPassword',
+                status:"sent",
+                createdAt:{
+                    $gt: curDateLimit
+                },
+                phoneCode: resetData.phoneCode
+            },
+            transaction: trans
+        }).then((instance)=>{
+            if(!instance){
+                throw {
+                    code: 1102,
+                    message: "无效的短信验证码",
+                    application: 'resetPassword'
+                };
+            }else{
+                return instance;
+            }
+        }).then((instanceOfPhoneCode)=>{
+            return DomainAccount.update({
+                password:resetData.password
+            },{
+                where:{
+                    account: resetData.account 
+                }
+            })
+        }).then((updateResult)=>{
+            let userKey = redisKey(formats.user, resetData.account);
+            let accountInfo = {
+                username: resetData.account,
+                password: resetData.password
+            };
+            return redis.hmsetAsync(userKey, accountInfo);
+        });
+    });
+}
+
 var DomainIdentify = sequelize.define("t_identify", {
     account: {
         type: Sequelize.STRING
@@ -604,9 +646,9 @@ DomainTxEthList.insertTxList = function insertTxList(ethArray){
         let hasData = createArray.length > 0;
         let hasNewData = hasData && createArray[0][0];
         if(hasData && createArray[0][1]){
-            let sql = `update t_bank as bank set ( amount_in ) = ( 
-                select rs.hamount from (
-                    select sum(amount)/1000000000000000000 as hamount, tx_sender, recipient from t_tx_eth_list
+            let sql = `update t_bank as bank set ( amount_in, usent ) = ( 
+                select rs.hamount, rs.gasused from (
+                    select sum(amount)/1000000000000000000 as hamount, sum(gas_used) as gasused, tx_sender, recipient from t_tx_eth_list
                     where lower(recipient)=lower('0xecc472db4a32fd84f3bbaa261bf4598b66fc6cf2')
                     group by tx_sender, recipient 
                 ) as rs

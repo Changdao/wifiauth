@@ -33,6 +33,7 @@ app.post('/wifiauth/code/verify/refresh', controllerAccount.refreshVerifyCode);
 app.get('/wifiauth/code/verify/:id/:timestamp', controllerAccount.refreshVerifyCodeImage);
 
 app.post('/wifiauth/signup', controllerAccount.createAccount);
+app.post('/wifiauth/resetpassword', controllerAccount.resetPassword);
 
 app.post('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.createSubscribe);
 app.get('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.getSubscribeInfo);
@@ -46,9 +47,9 @@ app.get('/oauth/authorise', app.oauth.authorise(), function (req, res) {
 app.get('/public', function (req, res) {
     res.send('public area');
 });
-helperEth.startCheckEth();
+//helperEth.startCheckEth();
 
-timers.setTimeout(helperBtc.startCheckBtc, 15 * 1000);
+//timers.setTimeout(helperBtc.startCheckBtc, 15 * 1000);
 //helperBtc.startCheckBtc();
 
 app.use(app.oauth.errorHandler());

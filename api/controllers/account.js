@@ -34,7 +34,8 @@ module.exports = {
     sendPhoneCode,
     preparePhoneCode,
     refreshVerifyCode,
-    refreshVerifyCodeImage
+    refreshVerifyCodeImage,
+    resetPassword
 };
 
 /**
@@ -213,4 +214,26 @@ function refreshVerifyCodeImage(req, res){
     var codeTimestamp = req.params.timestamp;
     let targetPath = Path.resolve(`${__dirname}/../../verifycode/verify_${codeId}_${codeTimestamp}.png`);
     res.sendFile(targetPath);
+};
+
+function resetPassword(req, res){
+    let resetData = req.body;
+    let infoIsValid = !!resetData && resetData.account && resetData.password && resetData.confirm && resetData.phoneCode && resetData.verifyCode;
+    infoIsValid = infoIsValid && (resetData.password == resetData.confirm);
+    if(infoIsValid){
+        DomainAccount.resetPassword(resetData).then(()=>{
+            res.status(200);
+            res.json({
+                code:0,
+                message:"成功"
+            });
+        });
+    }else{
+        res.status(500);
+        res.json({
+            code:12
+        })
+    }
 }
+
+
