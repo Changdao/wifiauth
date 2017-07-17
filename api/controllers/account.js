@@ -112,7 +112,7 @@ function sendPhoneCode(req, res){
         }else{
             sending = '您的注册验证码是'+result.phoneCode+"。退订回 T 。"
         }
-        SMSUtil.send(result.phone,'您的注册验证码是'+result.phoneCode+"。退订回 T 。");
+        SMSUtil.send(result.phone,sending);
         res.status(200);
         res.json("ok");
     }).catch((error)=>{
