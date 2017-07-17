@@ -3,9 +3,12 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     oauthserver = require('oauth2-server'); // Would be: 'oauth2-server'
 var multer = require('multer');
+var timers = require("timers");
 
 var controllerAccount = require('./api/controllers/account');
 var controllerUpload = require('./api/controllers/upload');
+var helperEth = require('./api/helpers/ethCheckHelper');
+var helperBtc = require('./api/helpers/btcCheckHelper');
 
 var app = express();
 var upload = multer({dest:"uploads/"});
@@ -30,6 +33,7 @@ app.post('/wifiauth/code/verify/refresh', controllerAccount.refreshVerifyCode);
 app.get('/wifiauth/code/verify/:id/:timestamp', controllerAccount.refreshVerifyCodeImage);
 
 app.post('/wifiauth/signup', controllerAccount.createAccount);
+app.post('/wifiauth/resetpassword', controllerAccount.resetPassword);
 
 app.post('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.createSubscribe);
 app.get('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.getSubscribeInfo);
@@ -41,9 +45,12 @@ app.get('/oauth/authorise', app.oauth.authorise(), function (req, res) {
 });
 
 app.get('/public', function (req, res) {
-  // Does not require an access_token
-  res.send('Public area');
+    res.send('public area');
 });
+//helperEth.startCheckEth();
+
+//timers.setTimeout(helperBtc.startCheckBtc, 15 * 1000);
+//helperBtc.startCheckBtc();
 
 app.use(app.oauth.errorHandler());
 

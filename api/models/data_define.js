@@ -188,15 +188,57 @@ DomainAccount.testPhoneExist = function testPhoneExist(phone){
 };
 DomainAccount.deleteAccountFromRedis = function deleteAccountFromRedis(account){
     let userKey = redisKey(formats.user, account);
-    return redis.delAsync(userKey)
-        .then((deled)=>{
-            return this.update({status:"disabled"},{
-                where:{
-                    account
-                }
-            });
+    return redis.delAsync(userKey).then((deled)=>{
+        return this.update({status:"disabled"},{
+            where:{
+                account
+            }
         });
+    });
 };
+DomainAccount.resetPassword = function resetPassword(resetData, minutes){
+    let curDateLimit = new Date(new Date() - (minutes || 10) * 60 * 1000 );
+    return sequelize.transaction((trans)=>{
+        return DomainPhoneCode.findOne({
+            where:{
+                phone: resetData.account,
+                application: resetData.application || 'resetPassword',
+                status:"sent",
+                createdAt:{
+                    $gt: curDateLimit
+                },
+                phoneCode: resetData.phoneCode
+            },
+            transaction: trans
+        }).then((instance)=>{
+            if(!instance){
+                throw {
+                    code: 1102,
+                    message: "无效的短信验证码",
+                    application: 'resetPassword'
+                };
+            }else{
+                return instance;
+            }
+        }).then((instanceOfPhoneCode)=>{
+            return DomainAccount.update({
+                password:resetData.password
+            },{
+                where:{
+                    account: resetData.account 
+                }
+            })
+        }).then((updateResult)=>{
+            let userKey = redisKey(formats.user, resetData.account);
+            let accountInfo = {
+                username: resetData.account,
+                password: resetData.password
+            };
+            return redis.hmsetAsync(userKey, accountInfo);
+        });
+    });
+}
+
 var DomainIdentify = sequelize.define("t_identify", {
     account: {
         type: Sequelize.STRING
@@ -484,6 +526,7 @@ DomainPhoneCode.sendPhoneCode = function sendPhoneCode(codeInfo){
             application: codeInfo.application
         }
     }).then((codeInstance)=>{
+        console.log(codeInstance);
         if(codeInstance.get('verifyCode') != codeInfo.verifyCode){
             throw {
                 code: 1503,
@@ -514,7 +557,266 @@ DomainPhoneCode.refreshVerifyCode = function refreshVerifyCode(codeInfo){
         }
     });
 };
-
+var DomainTxEthList = sequelize.define("t_tx_eth_list",{
+    hash:{
+        type: Sequelize.STRING,
+        field: "tx_hash"
+    },
+    sender:{
+        type: Sequelize.STRING,
+        field: "tx_sender"
+    },
+    recipient:{
+        type: Sequelize.STRING,
+        field:"recipient"
+    },
+    accountNonce:{
+        type: Sequelize.STRING,
+        field:"accountnonce"
+    },
+    price:{
+        type: Sequelize.BIGINT,
+        field:"price"
+    },
+    gasLimit:{
+        type: Sequelize.BIGINT,
+        field:"gas_limit"
+    },
+    amount:{
+        type: Sequelize.DECIMAL,
+        field:"amount"
+    },
+    block_id:{
+        type: Sequelize.BIGINT,
+        field:"block_id"
+    },
+    time:{
+        type: Sequelize.DATE,
+        field:"tx_time"
+    },
+    newContract:{
+        type: Sequelize.BIGINT,
+        field:"new_contract"
+    },
+    isContractTx:{
+        type: Sequelize.STRING,
+        field:"is_contract_tx"
+    },
+    blockHash:{
+        type: Sequelize.STRING,
+        field:"block_hash"
+    },
+    parentHash:{
+        type: Sequelize.STRING,
+        field:"parent_hash"
+    },
+    txIndex:{
+        type: Sequelize.STRING,
+        field:"tx_index"
+    },
+    gasUsed:{
+        type: Sequelize.BIGINT,
+        field:"gas_used"
+    },
+    type:{
+        type: Sequelize.STRING,
+        field: "tx_type"
+    },
+    status:{
+        type: Sequelize.STRING,
+        field:"status"
+    },
+    account:{
+        type: Sequelize.STRING,
+        field:"account"
+    }
+});
+DomainTxEthList.insertTxList = function insertTxList(ethArray){
+    return Promise.all(ethArray.map((ele)=>{
+        return this.findOrCreate({
+            where:{
+                sender:ele.sender,
+                recipient: ele.recipient,
+                hash: ele.hash,
+                time: ele.time
+            },
+            defaults: ele
+        });
+    })).then((createArray)=>{
+        let hasData = createArray.length > 0;
+        let hasNewData = hasData && createArray[0][0];
+        if(hasData && createArray[0][1]){
+            let sql = `update t_bank as bank set ( amount_in, usent ) = ( 
+                select rs.hamount, rs.gasused from (
+                    select sum(amount)/1000000000000000000 as hamount, sum(gas_used) as gasused, tx_sender, recipient from t_tx_eth_list
+                    where lower(recipient)=lower('0xecc472db4a32fd84f3bbaa261bf4598b66fc6cf2')
+                    group by tx_sender, recipient 
+                ) as rs
+                where lower(bank.bank_account) = lower(rs.tx_sender)
+            )
+            where bank.bank_type = 'ETH'`;
+            return sequelize.query(sql, {type: sequelize.QueryTypes.UPDATE});
+        }else{
+            throw {
+                code: 1101,
+                message : 'no data changed'
+            };
+        };
+    }).then((instanceArray)=>{
+        let sql = `update t_bank as bank set ( amount_out ) = ( 
+            select rs.hamount from (
+                select sum(amount)/1000000000000000000 as hamount, tx_sender, recipient from t_tx_eth_list
+                where lower(tx_sender)=lower('0xecc472db4a32fd84f3bbaa261bf4598b66fc6cf2')
+                group by tx_sender, recipient 
+            ) as rs
+            where lower(bank.bank_account) = lower(rs.recipient)
+        )
+        where bank.bank_type = 'ETH'`;
+        return sequelize.query(sql, {type: sequelize.QueryTypes.UPDATE});
+    });
+};
+var DomainTxBtcInput = sequelize.define("t_tx_btc_input",{
+    ver:{
+        type: Sequelize.INTEGER,
+        field: "btc_ver"
+    },
+    sequence:{
+        type: Sequelize.BIGINT,
+        field: "seq"
+    },
+    spent:{
+        type: Sequelize.BOOLEAN,
+        field:"spent"
+    },
+    preTxIndex:{
+        type: Sequelize.BIGINT,
+        field:"pre_tx_index"
+    },
+    preType:{
+        type: Sequelize.INTEGER,
+        field:"pre_tx_type"
+    },
+    addr:{
+        type: Sequelize.STRING,
+        field:"addr"
+    },
+    value:{
+        type: Sequelize.BIGINT,
+        field:"pre_value"
+    },
+    n:{
+        type: Sequelize.INTEGER,
+        field:"n"
+    },
+    preScript:{
+        type: Sequelize.STRING,
+        field:"pre_script"
+    },
+    inputScript:{
+        type: Sequelize.STRING,
+        field:"input_script"
+    },
+    block_height:{
+        type: Sequelize.INTEGER,
+        field:"block_height"
+    },
+    relayed_by:{
+        type: Sequelize.STRING,
+        field:"relayed_by"
+    },
+    lock_time:{
+        type: Sequelize.INTEGER,
+        field:"lock_time"
+    },
+    result:{
+        type: Sequelize.INTEGER,
+        field:"tx_result"
+    },
+    txSize:{
+        type: Sequelize.INTEGER,
+        field:"tx_size"
+    },
+    txTime:{
+        type: Sequelize.INTEGER,
+        field:"tx_time"
+    },
+    txIndex:{
+        type: Sequelize.INTEGER,
+        field:"tx_index"
+    },
+    vinSz:{
+        type: Sequelize.INTEGER,
+        field:"vin_sz"
+    },
+    hash:{
+        type: Sequelize.STRING,
+        field:"tx_hash"
+    },
+    voutSz:{
+        type: Sequelize.INTEGER,
+        field:"vout_sz"
+    },
+    txMethod: {
+        type: Sequelize.INTEGER,
+        field: "tx_method"
+    }
+});
+DomainTxBtcInput.insertTxList = function insertTxList(ethArray){
+    return Promise.all(ethArray.map((ele)=>{
+        return this.findOrCreate({
+            where:{
+                hash: ele.hash,
+                preScript: ele.preScript,
+                addr: ele.addr,
+                preTxIndex: ele.preTxIndex,
+                txIndex: ele.txIndex
+            },
+            defaults: ele
+        });
+    })).then((createArray)=>{
+        let hasData = createArray.length > 0;
+        let hasNewData = hasData && createArray[0][0];
+        if(hasData && createArray[0][1]){
+            let sql = `
+            update t_bank as bank set ( amount_in ) = (
+                select ins.ivalue from (
+                    select sum(txi.pre_value) /100000000  as ivalue, 
+                    txi.addr as iaddr
+                    -- , txi.tx_hash as ihash, txi.pre_script as iscript, txi.pre_tx_index as ipre_index, txi.tx_index as itx_index 
+                    from t_tx_btc_input as txi where tx_method = 1
+                    group by iaddr
+                    -- , ihash, iscript, ipre_index, itx_index
+                ) as ins
+                where lower(bank.bank_account) = lower(ins.iaddr)
+            )
+            where bank.bank_type = 'BTC'`;
+            return sequelize.query(sql, {type: sequelize.QueryTypes.UPDATE});
+            // return sequelize.query(sql, {type: sequelize.QueryTypes.UPDATE});
+        }else{
+            throw {
+                code: 1101,
+                message : 'no data changed'
+            };
+        };
+    }).then((instanceArray)=>{
+        let sql = `
+        update t_bank as bank set ( amount_out ) = (
+            select ins.ivalue from (
+                select sum(txi.pre_value) /100000000  as ivalue, 
+                txi.addr as iaddr
+                -- , txi.tx_hash as ihash, txi.pre_script as iscript, txi.pre_tx_index as ipre_index, txi.tx_index as itx_index 
+                from t_tx_btc_input as txi where tx_method = 2
+                group by iaddr
+                -- , ihash, iscript, ipre_index, itx_index
+            ) as ins
+            where lower(bank.bank_account) = lower(ins.iaddr)
+        )
+        where bank.bank_type = 'BTC'
+        `;
+        return sequelize.query(sql, {type: sequelize.QueryTypes.UPDATE});
+    });
+};
+    
 //exports.Visitor = Visitor;
 exports.DomainAccount = DomainAccount;
 exports.DomainIdentify = DomainIdentify;
@@ -522,5 +824,6 @@ exports.DomainBank = DomainBank;
 exports.DomainSubscribe = DomainSubscribe;
 exports.DomainDictionary = DomainDictionary;
 exports.DomainPhoneCode = DomainPhoneCode;
-
+exports.DomainTxEthList = DomainTxEthList;
+exports.DomainTxBtcInput = DomainTxBtcInput;
 

@@ -34,7 +34,8 @@ module.exports = {
     sendPhoneCode,
     preparePhoneCode,
     refreshVerifyCode,
-    refreshVerifyCodeImage
+    refreshVerifyCodeImage,
+    resetPassword
 };
 
 /**
@@ -105,6 +106,12 @@ function preparePhoneCode(req, res){
 function sendPhoneCode(req, res){
     var sendingData = req.body;
     DomainPhoneCode.sendPhoneCode(sendingData).then((result)=>{
+        var sending = '';
+        if(sendingData.application=='resetPassword'){
+            sending = '您的重置验证码是'+result.phoneCode+"。退订回 T 。";
+        }else{
+            sending = '您的注册验证码是'+result.phoneCode+"。退订回 T 。"
+        }
         SMSUtil.send(result.phone,'您的注册验证码是'+result.phoneCode+"。退订回 T 。");
         res.status(200);
         res.json("ok");
@@ -213,4 +220,26 @@ function refreshVerifyCodeImage(req, res){
     var codeTimestamp = req.params.timestamp;
     let targetPath = Path.resolve(`${__dirname}/../../verifycode/verify_${codeId}_${codeTimestamp}.png`);
     res.sendFile(targetPath);
+};
+
+function resetPassword(req, res){
+    let resetData = req.body;
+    let infoIsValid = !!resetData && resetData.account && resetData.password && resetData.confirm && resetData.phoneCode && resetData.verifyCode;
+    infoIsValid = infoIsValid && (resetData.password == resetData.confirm);
+    if(infoIsValid){
+        DomainAccount.resetPassword(resetData).then(()=>{
+            res.status(200);
+            res.json({
+                code:0,
+                message:"成功"
+            });
+        });
+    }else{
+        res.status(500);
+        res.json({
+            code:12
+        })
+    }
 }
+
+

@@ -2,3 +2,5 @@ node_modules/
 .git
 uploads/*
 .idea
+verifycode/
+.DS_Store
