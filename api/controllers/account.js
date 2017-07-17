@@ -106,6 +106,12 @@ function preparePhoneCode(req, res){
 function sendPhoneCode(req, res){
     var sendingData = req.body;
     DomainPhoneCode.sendPhoneCode(sendingData).then((result)=>{
+        var sending = '';
+        if(sendingData.application=='resetPassword'){
+            sending = '您的重置验证码是'+result.phoneCode+"。退订回 T 。";
+        }else{
+            sending = '您的注册验证码是'+result.phoneCode+"。退订回 T 。"
+        }
         SMSUtil.send(result.phone,'您的注册验证码是'+result.phoneCode+"。退订回 T 。");
         res.status(200);
         res.json("ok");
