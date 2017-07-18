@@ -42,8 +42,8 @@ app.get('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.get
 app.post('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.addAchecked);
 app.put('/wifiauth/authed/checked/:checkedId', app.oauth.authorise(), controllerAccount.updateChecked);
 
-app.get('/wifiauth/authed/subscribe/list/:phone', app.oauth.authorise(), controllerAccount.subListOfPhone);
-app.get('/wifiauth/authed/checked/list/:phone', app.oauth.authorise(), controllerAccount.checkedListOfPhone);
+//app.get('/wifiauth/authed/subscribe/list/:phone', app.oauth.authorise(), controllerAccount.subListOfPhone);
+//app.get('/wifiauth/authed/checked/list/:phone', app.oauth.authorise(), controllerAccount.checkedListOfPhone);
 app.get('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.getChecked);
 
 app.get('/oauth/authorise', app.oauth.authorise(), function (req, res) {
