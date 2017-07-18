@@ -250,8 +250,7 @@ function getChecked(req, res){
     let authUser = req.user;
     DomainChecked.findAll({
         where:{
-            account:authUser.id,
-            bankType:'ETH'
+            account:authUser.id
         }
     }).then((findArray)=>{
         console.log(findArray);

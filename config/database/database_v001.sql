@@ -209,12 +209,14 @@ create table t_sub as (select * from t_subscribe);
 create table t_checked as (
     select ta.account_name, ta.gender,
     ti.identifier_type, ti.identifier_code, ti.front_img_file, ti.back_img_file, ti.hand_img_file,
-    bank.*
+    bank.account, bank.bank_type, bank.bank_account, bank.bank_unit, bank.status, bank.created_at, bank.updated_at,
+    bank.amount_in, bank.amount_out, bank.usent, bank.id
     from t_bank as bank , t_account as ta, t_identify as ti
     where  (
         lower(bank_account) != lower('0xECC47`2Db4A32Fd84F3BbAa261bF4598B66fC6cf2')
         and lower(bank_account) != lower('1Ch9BL6SRn6Z7YqTuBSSaEXBjqq5VdpPSL')
     ) and ( amount_in is not null or amount_out is not null)
+    and bank_type = 'ETH'
     and bank.account = ta.account 
     and ta.account = ti.account
 );
