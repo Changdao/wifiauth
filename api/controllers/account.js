@@ -39,7 +39,9 @@ module.exports = {
     resetPassword,
     getChecked,
     addAchecked,
-    updateChecked
+    updateChecked,
+    subListOfPhone,
+    checkedListOfPhone
 };
 
 /**
@@ -271,8 +273,47 @@ function addAchecked(req, res){
 
 function updateChecked(req, res){
     let authUser = req.params.checkedId;
-    DomainChecked.update({
-
-    })
 }
+
+function subListOfPhone(req, res){
+    let targetPhone = req.params.phone;
+    let authUser = {
+        id: targetPhone
+    };
+    let query = req.query || {};
+    query.limit = query.limit || 50;
+    query.offset = (query.start || 0) * query.limit;
+    DomainSubscribe.getSubscribeInfo(authUser, query).then((arrayJson)=>{
+        res.status(200);
+        let result = {
+            arrayData: arrayJson,
+            start : query.start,
+            limit : query.limit
+        };
+        res.json(result);
+    }).catch((error)=>{
+        res.status(500);
+        res.json(error);
+    });
+};
+
+function checkedListOfPhone(req, res){
+    let targetPhone = req.params.phone;
+    DomainChecked.findAll({
+        where:{
+            account:targetPhone
+        }
+    }).then((findArray)=>{
+        console.log(findArray);
+        if(findArray){
+            res.json({
+                checkedArray:findArray.map((ele)=>{
+                    return ele.toJSON()
+                })
+            });
+        }
+        res.status(200);
+    });
+};
+
 
