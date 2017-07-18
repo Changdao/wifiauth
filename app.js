@@ -38,6 +38,7 @@ app.post('/wifiauth/resetpassword', controllerAccount.resetPassword);
 app.post('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.createSubscribe);
 app.get('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.getSubscribeInfo);
 app.get('/wifiauth/authed/account', app.oauth.authorise(), controllerAccount.getAccount);
+app.get('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.getChecked);
 
 app.get('/oauth/authorise', app.oauth.authorise(), function (req, res) {
     // Will require a valid access_token

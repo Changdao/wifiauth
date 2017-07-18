@@ -23,6 +23,7 @@ var SMSUtil = require('../smsutil');
 var DomainAccount = require("../models/data_define").DomainAccount;
 var DomainPhoneCode = require("../models/data_define").DomainPhoneCode;
 var DomainSubscribe = require("../models/data_define").DomainSubscribe;
+var DomainChecked = require("../models/data_define").DomainChecked;
 var Jimp = require('jimp');
 var Path = require('path');
 
@@ -35,7 +36,8 @@ module.exports = {
     preparePhoneCode,
     refreshVerifyCode,
     refreshVerifyCodeImage,
-    resetPassword
+    resetPassword,
+    getChecked
 };
 
 /**
@@ -242,4 +244,22 @@ function resetPassword(req, res){
     }
 }
 
+function getChecked(req, res){
+    let authUser = req.user;
+    DomainChecked.findAll({
+        where:{
+            account:authUser.id
+        }
+    }).then((findArray)=>{
+        console.log(findArray);
+        if(findArray){
+            res.json({
+                checkedArray:findArray.map((ele)=>{
+                    return ele.toJSON()
+                })
+            });
+        }
+        res.status(200);
+    })
+}
 

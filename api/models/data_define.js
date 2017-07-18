@@ -816,6 +816,69 @@ DomainTxBtcInput.insertTxList = function insertTxList(ethArray){
         return sequelize.query(sql, {type: sequelize.QueryTypes.UPDATE});
     });
 };
+
+var DomainChecked = sequelize.define("t_checked",{
+    accountName:{
+        type:Sequelize.STRING,
+        field:"account_name"
+    },
+    gender:{
+        type:Sequelize.INTEGER,
+        field:"gender"
+    },
+    identifierType:{
+        type:Sequelize.STRING,
+        field:"identifier_type"
+    },
+    identifierCode:{
+        type:Sequelize.STRING,
+        field:"identifier_code"
+    },
+    frontImgFile:{
+        type:Sequelize.STRING,
+        field:"front_img_file"
+    },
+    backImgFile:{
+        type:Sequelize.STRING,
+        field:"back_img_file"
+    },
+    handImgFile:{
+        type:Sequelize.STRING,
+        field:"hand_img_file"
+    },
+    account:{
+        type:Sequelize.STRING,
+        field:"account"
+    },
+    bankType:{
+        type:Sequelize.STRING,
+        field:"bank_type"
+    },
+    bankAccount:{
+        type:Sequelize.STRING,
+        field:"bank_account"
+    },
+    bankUnit:{
+        type:Sequelize.STRING,
+        field:"bank_unit"
+    },
+    status:{
+        type:Sequelize.STRING,
+        field:"status"
+    },
+    amountIn:{
+        type:Sequelize.DOUBLE,
+        field:"amount_in"
+    },
+    amountOut:{
+        type:Sequelize.DOUBLE,
+        field:"amount_out"
+    },
+    usent:{
+        type:Sequelize.DOUBLE,
+        field:"usent"
+    }
+});
     
 //exports.Visitor = Visitor;
 exports.DomainAccount = DomainAccount;
@@ -826,4 +889,4 @@ exports.DomainDictionary = DomainDictionary;
 exports.DomainPhoneCode = DomainPhoneCode;
 exports.DomainTxEthList = DomainTxEthList;
 exports.DomainTxBtcInput = DomainTxBtcInput;
-
+exports.DomainChecked = DomainChecked;

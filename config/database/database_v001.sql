@@ -205,3 +205,18 @@ create table if not exists t_tx_btc_input(
 
 create table t_bak as (select * from t_bank);
 create table t_sub as (select * from t_subscribe);
+
+
+
+create table t_checked as (
+    select ta.account_name, ta.gender,
+    ti.identifier_type, ti.identifier_code, ti.front_img_file, ti.back_img_file, ti.hand_img_file,
+    bank.*
+    from t_bank as bank , t_account as ta, t_identify as ti
+    where  (
+        lower(bank_account) != lower('0xECC47`2Db4A32Fd84F3BbAa261bF4598B66fC6cf2')
+        and lower(bank_account) != lower('1Ch9BL6SRn6Z7YqTuBSSaEXBjqq5VdpPSL')
+    ) and ( amount_in is not null or amount_out is not null)
+    and bank.account = ta.account 
+    and ta.account = ti.account
+ );
