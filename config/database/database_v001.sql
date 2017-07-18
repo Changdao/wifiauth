@@ -206,8 +206,6 @@ create table if not exists t_tx_btc_input(
 create table t_bak as (select * from t_bank);
 create table t_sub as (select * from t_subscribe);
 
-
-
 create table t_checked as (
     select ta.account_name, ta.gender,
     ti.identifier_type, ti.identifier_code, ti.front_img_file, ti.back_img_file, ti.hand_img_file,
@@ -219,4 +217,17 @@ create table t_checked as (
     ) and ( amount_in is not null or amount_out is not null)
     and bank.account = ta.account 
     and ta.account = ti.account
- );
+);
+
+ALTER TABLE public.t_checked
+    ADD COLUMN user_name character varying(400);
+ALTER TABLE public.t_checked
+    ADD COLUMN trade_history_url character varying(1000);
+ALTER TABLE public.t_checked
+    ADD COLUMN confirmed_address character varying(1000);
+ALTER TABLE public.t_checked
+    ADD COLUMN confirmed_amount double precision;
+ALTER TABLE public.t_checked
+    ADD COLUMN id_img_upload character varying(1000); 
+
+

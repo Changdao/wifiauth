@@ -37,7 +37,9 @@ module.exports = {
     refreshVerifyCode,
     refreshVerifyCodeImage,
     resetPassword,
-    getChecked
+    getChecked,
+    addAchecked,
+    updateChecked
 };
 
 /**
@@ -248,7 +250,8 @@ function getChecked(req, res){
     let authUser = req.user;
     DomainChecked.findAll({
         where:{
-            account:authUser.id
+            account:authUser.id,
+            bankType:'ETH'
         }
     }).then((findArray)=>{
         console.log(findArray);
@@ -260,6 +263,17 @@ function getChecked(req, res){
             });
         }
         res.status(200);
+    })
+}
+
+function addAchecked(req, res){
+
+}
+
+function updateChecked(req, res){
+    let authUser = req.params.checkedId;
+    DomainChecked.update({
+
     })
 }
 
