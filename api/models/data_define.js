@@ -877,6 +877,18 @@ var DomainChecked = sequelize.define("t_checked",{
     usent:{
         type:Sequelize.DOUBLE,
         field:"usent"
+    },
+    userName:{
+        type:Sequelize.STRING,
+        field:"user_name"
+    },
+    confirmedAddress:{
+        type:Sequelize.STRING,
+        field:"confirmed_address"
+    },
+    confirmedAmount:{
+        type:Sequelize.DOUBLE,
+        field:"confirmed_amount"
     }
 });
     
