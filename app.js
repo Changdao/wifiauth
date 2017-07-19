@@ -44,8 +44,8 @@ app.put('/wifiauth/authed/checked/:checkedId', app.oauth.authorise(), controller
 
 app.get('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.getChecked);
 
-app.get('/wifiauth/authed/subscribe/list/:phone', controllerAccount.subListOfPhone);
-app.get('/wifiauth/authed/checked/list/:phone', controllerAccount.checkedListOfPhone);
+app.get('/wifiauth/authed/list/subscribe/:phone', controllerAccount.subListOfPhone);
+app.get('/wifiauth/authed/list/checked/:phone', controllerAccount.checkedListOfPhone);
 
 app.get('/oauth/authorise', app.oauth.authorise(), function (req, res) {
     // Will require a valid access_token
