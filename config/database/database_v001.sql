@@ -231,5 +231,69 @@ ALTER TABLE public.t_checked
     ADD COLUMN confirmed_amount double precision;
 ALTER TABLE public.t_checked
     ADD COLUMN id_img_upload character varying(1000); 
+ALTER TABLE public.t_checked
+    ADD COLUMN confirmer character varying(1000); 
+ALTER TABLE public.t_checked ADD COLUMN confirmer character varying(1000); 
+
+create table t_confirmed as (select * from t_checked ) with no data;
+
+ALTER TABLE public.t_confirmed DROP COLUMN id;
+
+CREATE SEQUENCE public.t_confirmed_id_seq
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.t_confirmed_id_seq
+    OWNER TO wifiauth;
+    
+CREATE SEQUENCE public.t_checked_id_seq
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.t_checked_id_seq
+    OWNER TO wifiauth;
+
+ALTER TABLE public.t_checked DROP COLUMN ID;
+
+ALTER TABLE public.t_checked
+    ADD COLUMN id bigint NOT NULL DEFAULT nextval('t_checked_id_seq'::regclass);
 
 
+drop table t_dichecked;
+drop SEQUENCE t_dichecked_id_seq;
+
+create table t_dichecked as (
+select account_name, account, bank_type, bank_account, 
+case when confirmed_amount is null then amount_in else confirmed_amount end as checked_amount, 
+status from t_checked
+) with no data;
+
+    
+CREATE SEQUENCE public.t_dichecked_id_seq
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+
+ALTER SEQUENCE public.t_dichecked_id_seq
+    OWNER TO wifiauth;
+
+
+ALTER TABLE public.t_dichecked
+    ADD COLUMN id bigint NOT NULL DEFAULT nextval('t_dichecked_id_seq'::regclass);
+
+insert into t_dichecked 
+select account_name, account, bank_type, bank_account, 
+case when confirmed_amount is null then amount_in else confirmed_amount end as checked_amount, 
+status from t_checked
+;
+
+alter table t_dichecked add column useful integer;
