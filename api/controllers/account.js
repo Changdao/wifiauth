@@ -330,7 +330,7 @@ function checkedListOfPhone(req, res) {
 };
 
 function userIsGEOperator(authUser) {
-    let couldOperate = isDeveloping || (authUser.id == '13718961866' || authUser.id == '13718961866');
+    let couldOperate = isDeveloping || (authUser.id == '13718961866' || authUser.id == '15110003921');
     return couldOperate;
 };
 
