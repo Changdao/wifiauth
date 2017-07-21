@@ -11,7 +11,7 @@ var helperEth = require('./api/helpers/ethCheckHelper');
 var helperBtc = require('./api/helpers/btcCheckHelper');
 
 var app = express();
-var upload = multer({dest:"uploads/"});
+var upload = multer({ dest: "uploads/" });
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -39,21 +39,23 @@ app.post('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.
 app.get('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.getSubscribeInfo);
 app.get('/wifiauth/authed/account', app.oauth.authorise(), controllerAccount.getAccount);
 app.get('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.getChecked);
-app.post('/wifiauth/authed/checked', app.oauth.authorise(),controllerAccount.addAchecked);
+app.post('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.addAchecked);
 app.put('/wifiauth/authed/checked/:checkedId', app.oauth.authorise(), controllerAccount.updateChecked);
 
 
 app.get('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.getChecked);
 
-//app.get('/wifiauth/authed/subscribe/list/:phone', controllerAccount.subListOfPhone);
-//app.get('/wifiauth/authed/checked/list/:phone', controllerAccount.checkedListOfPhone);
+app.get('/wifiauth/authed/list/subscribe/:phone', app.oauth.authorise(), controllerAccount.subListOfPhone);
+app.get('/wifiauth/authed/list/checked/:phone', app.oauth.authorise(), controllerAccount.checkedListOfPhone);
+app.get('/wifiauth/authed/send/msg/list', app.oauth.authorise(), controllerAccount.needSendMsgAccountList);
+app.post('/wifiauth/authed/send/msg/to/:phone', app.oauth.authorise(), controllerAccount.sendMsgToAccount);
 
-app.get('/oauth/authorise', app.oauth.authorise(), function (req, res) {
+app.get('/oauth/authorise', app.oauth.authorise(), function(req, res) {
     // Will require a valid access_token
     res.send('Secret area');
 });
 
-app.get('/public', function (req, res) {
+app.get('/public', function(req, res) {
     res.send('public area');
 });
 //helperEth.startCheckEth();
@@ -68,4 +70,3 @@ app.listen(port);
 
 // for test
 module.exports = app;
-
