@@ -27,6 +27,8 @@ var DomainChecked = require("../models/data_define").DomainChecked;
 var Jimp = require('jimp');
 var Path = require('path');
 
+const isDeveloping = true;
+
 module.exports = {
     createAccount: createAccount,
     getAccount,
@@ -276,14 +278,19 @@ function updateChecked(req, res){
 }
 
 function subListOfPhone(req, res){
+    let authUser = req.user;
+    if(!userIsGEOperator(authUser)) {
+        res.status(500);
+        return;
+    };
     let targetPhone = req.params.phone;
-    let authUser = {
+    let targetUser = {
         id: targetPhone
     };
     let query = req.query || {};
     query.limit = query.limit || 50;
     query.offset = (query.start || 0) * query.limit;
-    DomainSubscribe.getSubscribeInfo(authUser, query).then((arrayJson)=>{
+    DomainSubscribe.getSubscribeInfo(targetUser, query).then((arrayJson)=>{
         res.status(200);
         let result = {
             arrayData: arrayJson,
@@ -298,6 +305,11 @@ function subListOfPhone(req, res){
 };
 
 function checkedListOfPhone(req, res){
+    let authUser = req.user;
+    if(!userIsGEOperator(authUser)) {
+        res.status(500);
+        return;
+    };
     let targetPhone = req.params.phone;
     DomainChecked.findAll({
         where:{
@@ -316,4 +328,7 @@ function checkedListOfPhone(req, res){
     });
 };
 
+function userIsGEOperator(authUser){
+    return isDeveloping || ( authUser && authUser.id == '13718961866') ;
+}
 
