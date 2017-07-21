@@ -295,3 +295,5 @@ select account_name, account, bank_type, bank_account,
 case when confirmed_amount is null then amount_in else confirmed_amount end as checked_amount, 
 status from t_checked
 ;
+
+alter table t_dichecked add column useful integer;
