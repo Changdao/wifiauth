@@ -912,6 +912,28 @@ var DomainSMS = sequelize.define("t_sms", {
     }
 });
 
+var DomainUBCAddress = sequelize.define("t_ubc_address", {
+    account: {
+        type: Sequelize.STRING,
+        field: "account"
+    },
+    ubcVersion: {
+        type: Sequelize.INTEGER,
+        field: "ubc_version"
+    },
+    address: {
+        type: Sequelize.STRING,
+        field: "address"
+    },
+    status: {
+        type: Sequelize.STRING,
+        field: "status"
+    },
+    amount: {
+        type: Sequelize.DOUBLE,
+        field: "amount"
+    }
+});
 
 //exports.Visitor = Visitor;
 exports.DomainAccount = DomainAccount;
@@ -924,3 +946,4 @@ exports.DomainTxEthList = DomainTxEthList;
 exports.DomainTxBtcInput = DomainTxBtcInput;
 exports.DomainChecked = DomainChecked;
 exports.DomainSMS = DomainSMS;
+exports.DomainUBCAddress = DomainUBCAddress;

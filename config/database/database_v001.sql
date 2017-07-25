@@ -304,9 +304,20 @@ create table if not exists t_sms (
     account varchar(400),
     message varchar(1000),
     status varchar(40),
-    usages varcahr(40),
+    usages varchar(40),
     created_at timestamp default current_timestamp,
     updated_at timestamp
 );
 
 
+
+create table if not exists t_ubc_address (
+    id bigserial primary key not null, 
+   	created_at timestamp default current_timestamp,
+   	updated_at timestamp,
+    account varchar(400),
+    ubc_version integer,
+    address varchar(1000),
+    status varchar(40),
+    amount double precision
+);

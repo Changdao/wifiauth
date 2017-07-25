@@ -45,7 +45,8 @@ module.exports = {
     subListOfPhone,
     checkedListOfPhone,
     needSendMsgAccountList,
-    sendMsgToAccount
+    sendMsgToAccount,
+    saveUBCAddress
 };
 
 /**
@@ -254,11 +255,7 @@ function resetPassword(req, res) {
 
 function getChecked(req, res) {
     let authUser = req.user;
-    DomainChecked.findAll({
-        where: {
-            account: authUser.id
-        }
-    }).then((findArray) => {
+    getCheckedListOfPhone(authUser.id).then((findArray) => {
         console.log(findArray);
         if (findArray) {
             res.json({
@@ -313,11 +310,7 @@ function checkedListOfPhone(req, res) {
         return;
     };
     let targetPhone = req.params.phone;
-    DomainChecked.findAll({
-        where: {
-            account: targetPhone
-        }
-    }).then((findArray) => {
+    getCheckedListOfPhone(targetPhone).then((findArray) => {
         if (findArray) {
             res.json({
                 checkedArray: findArray.map((ele) => {
@@ -328,6 +321,14 @@ function checkedListOfPhone(req, res) {
         res.status(200);
     });
 };
+
+function getCheckedListOfPhone(phone) {
+    return DomainChecked.findAll({
+        where: {
+            account: phone
+        }
+    });
+}
 
 function userIsGEOperator(authUser) {
     let couldOperate = isDeveloping || (authUser.id == '13718961866' || authUser.id == '15110003921');
@@ -375,4 +376,8 @@ function sendMsgToAccount(req, res) {
             message: 'ok'
         });
     });
+}
+
+function saveUBCAddress(req, res) {
+
 }
