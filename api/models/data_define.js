@@ -934,6 +934,38 @@ var DomainUBCAddress = sequelize.define("t_ubc_address", {
         field: "amount"
     }
 });
+DomainUBCAddress.ubcAddress = function ubcAddress(authUser, theAmount, body) {
+    const theVersion = 1;
+    return this.findOrCreate({
+        where: {
+            account: authUser.id
+        },
+        defaults: {
+            account: authUser.id,
+            ubcVersion: theVersion,
+            address: body.address,
+            status: "waiting",
+            amount: theAmount
+        }
+    }).then((result) => {
+        if (result[1]) { // create new ubc address
+            return result[0].toJSON();
+        } else { // update ubc address
+            return this.update({
+                address: body.address,
+                amount: theAmount
+            }, {
+                where: {
+                    account: authUser.id,
+                    status: "waiting",
+                    ubcVersion: theVersion
+                }
+            }).then((affectedArray) => {
+                return affectedArray;
+            });
+        };
+    });
+}
 
 //exports.Visitor = Visitor;
 exports.DomainAccount = DomainAccount;

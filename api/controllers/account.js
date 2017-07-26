@@ -9,11 +9,11 @@ if (!String.prototype.padStart) {
             targetLength = targetLength - this.length;
             if (targetLength > padString.length) {
                 padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-            }
+            };
             return padString.slice(0, targetLength) + String(this);
-        }
+        };
     };
-}
+};
 /**
  用于处理优惠券模版
 **/
@@ -24,6 +24,7 @@ var DomainPhoneCode = require("../models/data_define").DomainPhoneCode;
 var DomainSubscribe = require("../models/data_define").DomainSubscribe;
 var DomainChecked = require("../models/data_define").DomainChecked;
 var DomainSMS = require("../models/data_define").DomainSMS;
+var DomainUBCAddress = require("../models/data_define").DomainUBCAddress;
 var Jimp = require('jimp');
 var Path = require('path');
 
@@ -379,5 +380,32 @@ function sendMsgToAccount(req, res) {
 }
 
 function saveUBCAddress(req, res) {
-
+    let authUser = req.user;
+    let body = req.body;
+    let amount = 0;
+    let ethRate = 28000;
+    let btcRate = 230000;
+    getCheckedListOfPhone(body.phone || authUser.id).then((resultArray) => {
+        return resultArray.map(ele => ele.toJSON());
+    }).then((jsonArray) => {
+        jsonArray.forEach((jsonEle) => {
+            switch (jsonEle.bankType) {
+                case 'BTC':
+                    amount += jsonEle.confirmedAmount * btcRate;
+                    break;
+                case 'ETH':
+                    amount += jsonEle.confirmedAmount * ethRate;
+                    break;
+            };
+        });
+        return amount;
+    }).then((theAmount) => {
+        return DomainUBCAddress.ubcAddress(authUser, theAmount, body);
+    }).then((theJson) => {
+        res.status(200);
+        res.json({ message: "ok" });
+    }).catch((error) => {
+        res.status(500);
+        res.json(error);
+    });
 }

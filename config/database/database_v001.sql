@@ -321,3 +321,7 @@ create table if not exists t_ubc_address (
     status varchar(40),
     amount double precision
 );
+
+update t_checked set confirmed_address = bank_account , confirmed_amount = amount_in 
+where confirmed_address is null
+;
