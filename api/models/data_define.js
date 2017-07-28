@@ -318,7 +318,7 @@ DomainBank.createBank = function createBank(authUser, info, trans) {
             status: "using"
         }
     }, { transaction: trans }).then((arrayInstance) => {
-        console.log(arrayInstance);
+        // console.log(arrayInstance);
         if (arrayInstance[1]) {
             return arrayInstance[0].toJSON();
         } else {
@@ -374,7 +374,7 @@ DomainSubscribe.getSubscribeInfo = function getSubscribeInfo(authUser, query) {
         limit: query.limit,
         offset: query.offset
     }).then((arrayInstance) => {
-        console.log("find info:" + arrayInstance);
+        // console.log("find info:" + arrayInstance);
         return arrayInstance.map(ele => ele.toJSON());
     });
 };
@@ -527,7 +527,7 @@ DomainPhoneCode.sendPhoneCode = function sendPhoneCode(codeInfo) {
             application: codeInfo.application
         }
     }).then((codeInstance) => {
-        console.log(codeInstance);
+        // console.log(codeInstance);
         if (codeInstance.get('verifyCode') != codeInfo.verifyCode) {
             throw {
                 code: 1503,
@@ -938,26 +938,27 @@ DomainUBCAddress.ubcAddress = function ubcAddress(authUser, theAmount, body) {
     const theVersion = 1;
     return this.findOrCreate({
         where: {
-            account: authUser.id
+            account: body.phone || authUser.id
         },
         defaults: {
-            account: authUser.id,
+            account: body.phone || authUser.id,
             ubcVersion: theVersion,
             address: body.address,
-            status: "waiting",
+            status: body.status || "waiting",
             amount: theAmount
         }
     }).then((result) => {
+        console.log(body);
         if (result[1]) { // create new ubc address
             return result[0].toJSON();
         } else { // update ubc address
             return this.update({
                 address: body.address,
-                amount: theAmount
+                amount: theAmount,
+                status: body.status || "waiting"
             }, {
                 where: {
-                    account: authUser.id,
-                    status: "waiting",
+                    account: body.phone || authUser.id,
                     ubcVersion: theVersion
                 }
             }).then((affectedArray) => {

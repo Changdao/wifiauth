@@ -49,7 +49,10 @@ app.get('/wifiauth/authed/list/subscribe/:phone', app.oauth.authorise(), control
 app.get('/wifiauth/authed/list/checked/:phone', app.oauth.authorise(), controllerAccount.checkedListOfPhone);
 app.get('/wifiauth/authed/send/msg/list', app.oauth.authorise(), controllerAccount.needSendMsgAccountList);
 app.post('/wifiauth/authed/send/msg/to/:phone', app.oauth.authorise(), controllerAccount.sendMsgToAccount);
-app.post('/wifiauth/authed/save/ubc/address', app.oauth.authorise(), controllerAccount.saveUBCAddress);
+app.post('/wifiauth/authed/ubc/address', app.oauth.authorise(), controllerAccount.saveUBCAddress);
+app.get('/wifiauth/authed/ubc/address', app.oauth.authorise(), controllerAccount.getUBCAddress);
+app.get('/wifiauth/authed/ubc/query/all', app.oauth.authorise(), controllerAccount.queryUBCAddress);
+
 
 app.get('/oauth/authorise', app.oauth.authorise(), function(req, res) {
     // Will require a valid access_token

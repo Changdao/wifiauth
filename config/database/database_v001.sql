@@ -325,3 +325,14 @@ create table if not exists t_ubc_address (
 update t_checked set confirmed_address = bank_account , confirmed_amount = amount_in 
 where confirmed_address is null
 ;
+
+create table if not exists t_ubc_sended (
+	id bigserial primary key not null,
+   	created_at timestamp default current_timestamp,
+   	updated_at timestamp,
+    account varchar(400),
+    ubc_version integer,
+    address varchar(1000),
+    status varchar(40),
+    amount double precision
+);

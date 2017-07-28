@@ -47,7 +47,9 @@ module.exports = {
     checkedListOfPhone,
     needSendMsgAccountList,
     sendMsgToAccount,
-    saveUBCAddress
+    saveUBCAddress,
+    getUBCAddress,
+    queryUBCAddress
 };
 
 /**
@@ -167,8 +169,8 @@ function createSubscribe(req, res) {
             })
             .catch((errorInfo) => {
                 res.status(500);
-                console.log("unknown");
-                console.log(errorInfo);
+                // console.log("unknown");
+                // console.log(errorInfo);
                 res.json(errorInfo);
             });
     } else {
@@ -257,7 +259,7 @@ function resetPassword(req, res) {
 function getChecked(req, res) {
     let authUser = req.user;
     getCheckedListOfPhone(authUser.id).then((findArray) => {
-        console.log(findArray);
+        // console.log(findArray);
         if (findArray) {
             res.json({
                 checkedArray: findArray.map((ele) => {
@@ -281,6 +283,10 @@ function subListOfPhone(req, res) {
     let authUser = req.user;
     if (!userIsGEOperator(authUser)) {
         res.status(500);
+        res.json({
+            code: 1551,
+            message: "权限不足"
+        });
         return;
     };
     let targetPhone = req.params.phone;
@@ -308,6 +314,10 @@ function checkedListOfPhone(req, res) {
     let authUser = req.user;
     if (!userIsGEOperator(authUser)) {
         res.status(500);
+        res.json({
+            code: 1551,
+            message: "权限不足"
+        });
         return;
     };
     let targetPhone = req.params.phone;
@@ -330,9 +340,10 @@ function getCheckedListOfPhone(phone) {
         }
     });
 }
+const operatorArray = ['13718961866', '15110003921'];
 
 function userIsGEOperator(authUser) {
-    let couldOperate = isDeveloping || (authUser.id == '13718961866' || authUser.id == '15110003921');
+    let couldOperate = isDeveloping || operatorArray.includes(authUser.id);
     return couldOperate;
 };
 
@@ -407,5 +418,62 @@ function saveUBCAddress(req, res) {
     }).catch((error) => {
         res.status(500);
         res.json(error);
+    });
+}
+
+function getUBCAddress(req, res) {
+    let authUser = req.user;
+    if (!userIsGEOperator(authUser)) {
+        res.status(500);
+        res.json({
+            code: 1551,
+            message: "权限不足"
+        });
+        return;
+    };
+    DomainUBCAddress.findAll({
+        where: {
+            account: req.user.id
+        }
+    }).then((addressInstanceArray) => {
+        let addressArray = addressInstanceArray.map((ele) => ele.toJSON());
+        if (addressArray.length <= 1) {
+            res.json({
+                data: addressArray
+            });
+            res.status(200);
+        } else if (addressArray.length > 1) {
+            throw {
+                code: 1602,
+                message: "数据异常，存在多个地址"
+            }
+        }
+    }).catch((err) => {
+        res.status(500);
+        res.json(err);
+    });
+}
+
+function queryUBCAddress(req, res) {
+    let authUser = req.user;
+    if (!userIsGEOperator(authUser)) {
+        res.status(500);
+        res.json({
+            code: 1551,
+            message: "权限不足"
+        });
+        return;
+    };
+    DomainUBCAddress.findAll({
+        where: {}
+    }).then((addressInstanceArray) => {
+        let addressArray = addressInstanceArray.map((ele) => ele.toJSON());
+        res.json({
+            data: addressArray
+        });
+        res.status(200);
+    }).catch((err) => {
+        res.status(500);
+        res.json(err);
     });
 }
