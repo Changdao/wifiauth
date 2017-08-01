@@ -319,11 +319,15 @@ create table if not exists t_ubc_address (
     ubc_version integer,
     address varchar(1000),
     status varchar(40),
-    amount double precision
+    amount double precision,
+    tx_hash varchar(1000)
 );
 
+-- 这个人投了 37eth，由于有急事 退币了
+update t_checked set confirmed_address = '0x208e19812549d88c6e8a6d5eb82fce0d662b98d081793f2cc12a1b4c8d10e074' where account = '18106756777';
+
 update t_checked set confirmed_address = bank_account , confirmed_amount = amount_in 
-where confirmed_address is null
+where confirmed_address is null and confirmed_amount is null
 ;
 
 create table if not exists t_ubc_sended (
@@ -334,5 +338,9 @@ create table if not exists t_ubc_sended (
     ubc_version integer,
     address varchar(1000),
     status varchar(40),
-    amount double precision
+    amount double precision,
+    tx_hash varchar(1000)
 );
+
+alter table t_ubc_address add column tx_hash varchar(1000);
+alter table t_ubc_sended add column tx_hash varchar(1000);

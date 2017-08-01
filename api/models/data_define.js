@@ -932,6 +932,10 @@ var DomainUBCAddress = sequelize.define("t_ubc_address", {
     amount: {
         type: Sequelize.DOUBLE,
         field: "amount"
+    },
+    txHash: {
+        type: Sequelize.STRING,
+        field: "tx_hash"
     }
 });
 DomainUBCAddress.ubcAddress = function ubcAddress(authUser, theAmount, body) {
