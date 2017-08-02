@@ -40,13 +40,17 @@ app.get('/wifiauth/authed/subscribe', app.oauth.authorise(), controllerAccount.g
 app.get('/wifiauth/authed/account', app.oauth.authorise(), controllerAccount.getAccount);
 app.get('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.getChecked);
 app.post('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.addAchecked);
+
 app.put('/wifiauth/authed/checked/:checkedId', app.oauth.authorise(), controllerAccount.updateChecked);
+app.get('/wifiauth/authed/list/all/checked', app.oauth.authorise(), controllerAccount.queryAllChecked);
+app.get('/wifiauth/authed/checked/tx/:address', app.oauth.authorise(), controllerAccount.getTradeCount);
 
 
 app.get('/wifiauth/authed/checked', app.oauth.authorise(), controllerAccount.getChecked);
 
 app.get('/wifiauth/authed/list/subscribe/:phone', app.oauth.authorise(), controllerAccount.subListOfPhone);
 app.get('/wifiauth/authed/list/checked/:phone', app.oauth.authorise(), controllerAccount.checkedListOfPhone);
+
 app.get('/wifiauth/authed/send/msg/list', app.oauth.authorise(), controllerAccount.needSendMsgAccountList);
 app.post('/wifiauth/authed/send/msg/to/:phone', app.oauth.authorise(), controllerAccount.sendMsgToAccount);
 app.post('/wifiauth/authed/ubc/address', app.oauth.authorise(), controllerAccount.saveUBCAddress);

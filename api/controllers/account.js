@@ -43,6 +43,8 @@ module.exports = {
     getChecked,
     addAchecked,
     updateChecked,
+    queryAllChecked,
+    getTradeCount,
     subListOfPhone,
     checkedListOfPhone,
     needSendMsgAccountList,
@@ -276,7 +278,76 @@ function addAchecked(req, res) {
 }
 
 function updateChecked(req, res) {
-    let authUser = req.params.checkedId;
+    let authUser = req.user;
+    if (!userIsGEOperator(authUser)) {
+        res.status(500);
+        res.json({
+            code: 1551,
+            message: "权限不足"
+        });
+        return;
+    };
+    DomainChecked.update(req.body, {
+        where: {
+            id: req.params.checkedId
+        }
+    }).then((success) => {
+        res.status(200);
+        res.json({ message: "ok", id: req.params.checkedId });
+    }).catch((err) => {
+        res.status(500);
+        res.json(err);
+    })
+}
+
+function queryAllChecked(req, res) {
+    let authUser = req.user;
+    if (!userIsGEOperator(authUser)) {
+        res.status(500);
+        res.json({
+            code: 1551,
+            message: "权限不足"
+        });
+        return;
+    };
+    DomainChecked.findAll({
+        order: [
+            ['bankType', 'asc'],
+            ['id', 'asc']
+        ]
+    }).then((arrayInstance) => {
+        res.status(200);
+        res.json({
+            data: arrayInstance.map((ele) => ele.toJSON())
+        })
+    }).catch((err) => {
+        res.status(500);
+        res.json(err);
+    })
+}
+
+function getTradeCount(req, res) {
+    let authUser = req.user;
+    let targetAddress = req.params.address;
+    if (!userIsGEOperator(authUser)) {
+        res.status(500);
+        res.json({
+            code: 1551,
+            message: "权限不足"
+        });
+        return;
+    };
+    DomainChecked.findAndCountAll({
+        where: {
+            confirmedAddress: targetAddress
+        }
+    }).then((result) => {
+        res.status(200);
+        res.json(result);
+    }).catch((err) => {
+        res.status(500);
+        res.json(err);
+    })
 }
 
 function subListOfPhone(req, res) {
