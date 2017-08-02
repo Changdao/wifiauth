@@ -936,6 +936,14 @@ var DomainUBCAddress = sequelize.define("t_ubc_address", {
     txHash: {
         type: Sequelize.STRING,
         field: "tx_hash"
+    },
+    sentCount: {
+        type: Sequelize.INTEGER,
+        field: "sent_count"
+    },
+    sendType: {
+        type: Sequelize.STRING,
+        field: 'send_type'
     }
 });
 DomainUBCAddress.ubcAddress = function ubcAddress(authUser, theAmount, body) {
@@ -949,7 +957,8 @@ DomainUBCAddress.ubcAddress = function ubcAddress(authUser, theAmount, body) {
             ubcVersion: theVersion,
             address: body.address,
             status: body.status || "waiting",
-            amount: theAmount
+            amount: theAmount,
+            sendType: body.sendType
         }
     }).then((result) => {
         console.log(body);
@@ -959,7 +968,8 @@ DomainUBCAddress.ubcAddress = function ubcAddress(authUser, theAmount, body) {
             return this.update({
                 address: body.address,
                 amount: theAmount,
-                status: body.status || "waiting"
+                status: body.status || "waiting",
+                sendType: body.sendType
             }, {
                 where: {
                     account: body.phone || authUser.id,

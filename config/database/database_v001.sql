@@ -339,8 +339,16 @@ create table if not exists t_ubc_sended (
     address varchar(1000),
     status varchar(40),
     amount double precision,
-    tx_hash varchar(1000)
+    tx_hash varchar(1000),
+    sent_count integer
 );
 
 alter table t_ubc_address add column tx_hash varchar(1000);
 alter table t_ubc_sended add column tx_hash varchar(1000);
+
+alter table t_ubc_sended add column sent_count integer;
+alter table t_ubc_sended add column send_type varchar(40);
+
+alter table t_ubc_address add column sent_count integer;
+alter table t_ubc_address add column send_type varchar(40);
+
