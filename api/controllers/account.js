@@ -423,14 +423,6 @@ function saveUBCAddress(req, res) {
 
 function getUBCAddress(req, res) {
     let authUser = req.user;
-    if (!userIsGEOperator(authUser)) {
-        res.status(500);
-        res.json({
-            code: 1551,
-            message: "权限不足"
-        });
-        return;
-    };
     DomainUBCAddress.findAll({
         where: {
             account: req.user.id
@@ -456,14 +448,6 @@ function getUBCAddress(req, res) {
 
 function queryUBCAddress(req, res) {
     let authUser = req.user;
-    if (!userIsGEOperator(authUser)) {
-        res.status(500);
-        res.json({
-            code: 1551,
-            message: "权限不足"
-        });
-        return;
-    };
     DomainUBCAddress.findAll({
         where: {}
     }).then((addressInstanceArray) => {
