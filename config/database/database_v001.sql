@@ -352,3 +352,14 @@ alter table t_ubc_sended add column send_type varchar(40);
 alter table t_ubc_address add column sent_count integer;
 alter table t_ubc_address add column send_type varchar(40);
 
+
+create table if not exists t_ubc_vip(
+    id bigserial primary key not null,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp,
+    account varchar(400),
+    address varchar(1000),
+    tx_hash varchar(1000),
+    amount double precision
+)
+
