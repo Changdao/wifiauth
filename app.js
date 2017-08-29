@@ -2,16 +2,21 @@
 var express = require('express'),
     bodyParser = require('body-parser'),
     oauthserver = require('oauth2-server'); // Would be: 'oauth2-server'
+var path = require('path');
 var multer = require('multer');
 var timers = require("timers");
 
 var controllerAccount = require('./api/controllers/account');
+var controllerGroup = require('./api/controllers/group');
 var controllerUpload = require('./api/controllers/upload');
 var helperEth = require('./api/helpers/ethCheckHelper');
 var helperBtc = require('./api/helpers/btcCheckHelper');
 
 var app = express();
 var upload = multer({ dest: "uploads/" });
+app.set('view engine', 'jade');
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -20,7 +25,6 @@ app.oauth = oauthserver({
     grants: ['password', 'refresh_token'],
     debug: true
 });
-
 
 // Handle token grant requests
 app.all('/wifiauth/token', app.oauth.grant());
@@ -56,7 +60,7 @@ app.post('/wifiauth/authed/send/msg/to/:phone', app.oauth.authorise(), controlle
 app.post('/wifiauth/authed/ubc/address', app.oauth.authorise(), controllerAccount.saveUBCAddress);
 app.get('/wifiauth/authed/ubc/address', app.oauth.authorise(), controllerAccount.getUBCAddress);
 app.get('/wifiauth/authed/ubc/query/all', app.oauth.authorise(), controllerAccount.queryUBCAddress);
-
+app.get('/wifiauth/group',controllerGroup.view);
 
 app.get('/oauth/authorise', app.oauth.authorise(), function(req, res) {
     // Will require a valid access_token

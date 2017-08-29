@@ -4,3 +4,4 @@ uploads/*
 .idea
 verifycode/
 .DS_Store
+npm-debug.log
